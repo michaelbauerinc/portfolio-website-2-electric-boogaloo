@@ -1,14 +1,26 @@
 // src/pages/about.tsx
 // import React from "react";
 import Navbar from "../components/Navbar";
-import AboutComponent from "../components/About";
 import "../app/globals.css";
+import type { NextPage } from "next";
+import ProfileCarousel from "../components/About/ProfileCarousel";
+import ProfileSection from "../components/About/ProfileSection";
+import TextSection from "../components/About/TextSection";
 
-const About: React.FC = () => {
+const About: NextPage = () => {
   return (
     <div>
       <Navbar />
-      <AboutComponent />
+      <div className="bg-gradient-to-r from-purple-500 to-pink-500 mx-auto p-8 text-white">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold mb-4 py-10">
+            About Me - Michael Bauer
+          </h1>
+          <TextSection />
+          <ProfileCarousel />
+        </div>
+        <ProfileSection />
+      </div>
     </div>
   );
 };
