@@ -9,6 +9,7 @@ import {
   AiOutlineProject,
 } from "react-icons/ai";
 import { HiMenu, HiX } from "react-icons/hi"; // Importing hamburger icons
+import { IoGameController } from "react-icons/io5";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false); // State to handle menu toggle
@@ -21,7 +22,7 @@ const Navbar = () => {
     <nav className="bg-gray-800 text-white p-4 sticky top-0 z-50">
       <div className="container mx-auto flex justify-between items-center">
         {/* Page Title */}
-        <div className="text-lg font-semibold">My Next.js App</div>
+        <div className="text-lg font-semibold">Mike Bauer</div>
 
         {/* Hamburger Icon for Mobile */}
         <div className="md:hidden" onClick={toggleMenu}>
@@ -47,6 +48,12 @@ const Navbar = () => {
             className="hover:text-gray-300 flex items-center"
           >
             <AiOutlineProject className="mr-1" /> Projects
+          </Link>
+          <Link
+            href="/games"
+            className="hover:text-gray-300 flex items-center p-4"
+          >
+            <IoGameController className="mr-1" /> Games
           </Link>
         </div>
       </div>
@@ -77,6 +84,12 @@ const Navbar = () => {
           className="hover:text-gray-300 flex items-center p-4"
         >
           <AiOutlineProject className="mr-1" /> Projects
+        </Link>
+        <Link
+          href="/games"
+          className="hover:text-gray-300 flex items-center p-4"
+        >
+          <IoGameController className="mr-1" /> Games
         </Link>
       </div>
     </nav>

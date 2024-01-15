@@ -1,9 +1,8 @@
 // pages/index.tsx
 import type { NextPage } from "next";
 import Link from "next/link";
-import { FiArrowRightCircle } from "react-icons/fi"; // Updated Icon
-import Navbar from "../components/Navbar";
-import DynamicBackground from "../components/DynamicBackground";
+import Navbar from "../components/common/Navbar";
+import DynamicBackground from "../components/common/DynamicBackground";
 
 const Home: NextPage = () => {
   return (
@@ -12,8 +11,11 @@ const Home: NextPage = () => {
       <DynamicBackground />
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
-          <h1 className="text-5xl font-bold text-black">Welcome to my world</h1>
-          <p className="mt-4 text-2xl text-black">
+          {/* Apply dark mode conditional classes */}
+          <h1 className="text-5xl font-bold text-black dark:text-white">
+            Welcome to my world
+          </h1>
+          <p className="mt-4 text-2xl text-black dark:text-white">
             From the mind of Mike Bauer...
           </p>
           <Link

@@ -1,6 +1,6 @@
 // src/pages/about.tsx
 // import React from "react";
-import Navbar from "../components/Navbar";
+import Navbar from "../components/common/Navbar";
 import "../app/globals.css";
 import type { NextPage } from "next";
 import ProfileCarousel from "../components/about/ProfileCarousel";

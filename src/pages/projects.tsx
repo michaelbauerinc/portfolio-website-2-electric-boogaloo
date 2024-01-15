@@ -1,9 +1,11 @@
 // src/pages/projects.tsx
 import React, { useState, useEffect } from "react";
 import type { NextPage } from "next";
-import Navbar from "../components/Navbar";
+import Navbar from "../components/common/Navbar";
 import ProjectCard, { ProjectProps } from "../components/projects/ProjectCard";
-import GitHubApiClient from "../components/utils/GitHubApiClient";
+import GitHubApiClient from "../components/lib/GitHubApiClient";
+import IconsBackground from "../components/common/IconsBackground";
+
 import "../app/globals.css";
 
 const Projects: NextPage = () => {
@@ -13,7 +15,6 @@ const Projects: NextPage = () => {
   useEffect(() => {
     // Example URLs (replace with actual GitHub project URLs)
     const projectUrls = [
-      "https://github.com/michaelbauerinc/portfolio",
       "https://github.com/michaelbauerinc/portfolio-website-2-electric-boogaloo",
       "https://github.com/michaelbauerinc/llama-streaming-suite",
       "https://github.com/michaelbauerinc/titanic-machine-learning",
@@ -26,7 +27,6 @@ const Projects: NextPage = () => {
       "https://github.com/michaelbauerinc/dig-labs",
       "https://github.com/michaelbauerinc/leagueside",
       "https://github.com/michaelbauerinc/django-demo",
-
       // Add more URLs here
     ];
 
@@ -40,10 +40,13 @@ const Projects: NextPage = () => {
 
   return (
     <div>
+      <IconsBackground />
       <Navbar />
-      <div className="bg-gradient-to-r from-blue-500 to-indigo-500 mx-auto p-8 text-white">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold mb-4 py-10">My GitHub Projects</h1>
+      <div className="bg-gradient-to-r mx-auto p-8 text-black">
+        <div className="text-center bg-purple-600/50 backdrop-blur-md rounded-xl p-4 mx-8 my-4 shadow-lg hover:scale-105 transition-transform">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 py-10 text-yellow-300">
+            My GitHub Projects
+          </h1>
         </div>
         <div className="grid grid-cols-2 gap-4 justify-center">
           {projects.map((project, index) => (

@@ -22,7 +22,7 @@ const ProjectCard: React.FC<{ project: ProjectProps }> = ({ project }) => (
     <div className="flex justify-center mt-4">
       <Link
         href={project.url}
-        className="flex items-center justify-center px-4 py-2 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+        className="flex items-center justify-center px-4 py-2 border border-transparent text-base font-medium rounded-md text-yellow-300 bg-purple-600 hover:bg-purple-700 transition duration-300 ease-in-out"
         target="_blank"
         rel="noopener noreferrer"
       >

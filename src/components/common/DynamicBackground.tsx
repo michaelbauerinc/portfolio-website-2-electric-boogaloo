@@ -73,7 +73,7 @@ const DynamicBackground = ({ creationInterval = 100 }) => {
       <div
         className="absolute top-0 left-0 w-full h-full"
         style={{
-          backgroundColor: "rgba(255, 255, 255, 0.8)",
+          backgroundColor: `rgba(var(--background-start-rgb), 0.8)`, // Updated line for dynamic theme-based background
           zIndex: 1,
         }}
       ></div>
