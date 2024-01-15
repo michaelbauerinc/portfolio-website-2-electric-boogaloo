@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { iconsAndTitles } from "./IconsAndTitles"; // Import the icons and titles array
+import { iconsAndTitles } from "../utils/IconsAndTitles"; // Import the icons and titles array
 
 const ProfileCarousel = () => {
   const [currentIndex, setCurrentIndex] = useState(0);

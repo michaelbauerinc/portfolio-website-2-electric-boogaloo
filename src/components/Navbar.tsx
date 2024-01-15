@@ -18,7 +18,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-gray-800 text-white p-4 relative">
+    <nav className="bg-gray-800 text-white p-4 sticky top-0 z-50">
       <div className="container mx-auto flex justify-between items-center">
         {/* Page Title */}
         <div className="text-lg font-semibold">My Next.js App</div>
