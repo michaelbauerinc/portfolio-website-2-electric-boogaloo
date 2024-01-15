@@ -1,95 +1,5 @@
 import Phaser from "phaser";
-
-class KartRaceUtils {
-  constructor(scene) {
-    this.scene = scene;
-  }
-
-  // Function to keep the player car within the outer track and outside the inner track boundaries
-  keepCarOnTrack(car, outerTrack, innerTrack) {
-    const distanceToOuter = Phaser.Math.Distance.Between(
-      car.x,
-      car.y,
-      outerTrack.x,
-      outerTrack.y
-    );
-    const distanceToInner = Phaser.Math.Distance.Between(
-      car.x,
-      car.y,
-      innerTrack.x,
-      innerTrack.y
-    );
-
-    const outerMaxDistance = outerTrack.radius - car.width / 2;
-    const innerMinDistance = innerTrack.radius + car.width / 2;
-
-    if (distanceToOuter > outerMaxDistance) {
-      this.repositionCar(car, outerTrack, outerMaxDistance);
-    } else if (distanceToInner < innerMinDistance) {
-      this.repositionCar(car, innerTrack, innerMinDistance);
-    }
-  }
-
-  repositionCar(car, track, distance) {
-    const angle = Phaser.Math.Angle.Between(track.x, track.y, car.x, car.y);
-    car.x = track.x + distance * Math.cos(angle);
-    car.y = track.y + distance * Math.sin(angle);
-
-    const velocity = car.body.velocity;
-    const velocityAngle = Math.atan2(velocity.y, velocity.x);
-    if (
-      Math.abs(Phaser.Math.Angle.ShortestBetween(angle, velocityAngle)) <
-      Math.PI / 2
-    ) {
-      car.setVelocity(0);
-    }
-  }
-
-  updateCountdown() {
-    const currentNumber = parseInt(this.scene.countdownText.text);
-    if (currentNumber > 1) {
-      console.log("hit 1");
-      this.scene.countdownText.setText(String(currentNumber - 1));
-    } else if (currentNumber === 1) {
-      console.log("hit 2");
-      this.scene.countdownText.setText("START!");
-      this.scene.time.delayedCall(
-        1000,
-        () => {
-          this.scene.isRaceStarted = true;
-          this.scene.countdownText.setVisible(false);
-        },
-        [],
-        this.scene
-      );
-    }
-  }
-
-  static isCarCrossingLine(car, lineY, lastYPosition) {
-    const carCrossedLine =
-      (lastYPosition > lineY && car.y < lineY) ||
-      (lastYPosition < lineY && car.y > lineY);
-    return carCrossedLine;
-  }
-}
-
-class Config {
-  static get gameWidth() {
-    return 800;
-  }
-  static get gameHeight() {
-    return 600;
-  }
-  static get trackRadius() {
-    return 300;
-  }
-  static get innerTrackRadius() {
-    return 150;
-  }
-  static get startingLineY() {
-    return 500;
-  }
-}
+import { KartRaceUtils, Config } from "./Static";
 
 export const KartRace = (domElement) => {
   return {
@@ -106,7 +16,7 @@ export const KartRace = (domElement) => {
     },
     scene: {
       preload: function () {
-        // ... [preload function]
+        // ... [preload function code]
       },
 
       create: function () {
@@ -128,21 +38,18 @@ export const KartRace = (domElement) => {
           this.innerTrack,
           Phaser.Physics.Arcade.STATIC_BODY
         );
+        this.hazards = this.physics.add.group(); // Create a group for hazards
 
-        // Calculate the length of the starting line
         const startingLineLength = Config.trackRadius - Config.innerTrackRadius;
-
-        // Calculate the starting Y position of the line
         const startingLineY =
           300 + Config.innerTrackRadius + startingLineLength / 2;
 
-        // Create the starting line
         this.startingLine = this.add.rectangle(
-          400, // X position (center of the track)
-          startingLineY, // Y position (calculated)
-          5, // Width of the line
-          startingLineLength, // Length of the line
-          0xffffff // Color
+          400,
+          startingLineY,
+          5,
+          startingLineLength,
+          0xffffff
         );
         this.physics.world.enable(
           this.startingLine,
@@ -153,6 +60,56 @@ export const KartRace = (domElement) => {
           .sprite(400, Config.startingLineY, "car")
           .setCircle(15);
         this.playerCar.setCollideWorldBounds(true);
+        this.playerCar.setAngle(90);
+
+        // Define checkpoints
+        this.checkpoints = [
+          {
+            x: 400,
+            y: -300 + Config.innerTrackRadius + startingLineLength / 2,
+            passed: false,
+          },
+        ];
+
+        // Calculate the length of the checkpoint lines
+        const checkpointLineLength =
+          Config.trackRadius - Config.innerTrackRadius;
+
+        // Render checkpoints
+        this.checkpointLines = this.checkpoints.map((checkpoint, index) => {
+          // Set the y position of the checkpoint line
+          const checkpointLineY = checkpoint.y + Config.innerTrackRadius;
+
+          checkpoint.line = this.add.rectangle(
+            checkpoint.x,
+            checkpointLineY,
+            5, // Width of the line
+            checkpointLineLength, // Length of the line
+            0xff0000 // Color
+          );
+
+          this.physics.world.enable(
+            checkpoint.line,
+            Phaser.Physics.Arcade.STATIC_BODY
+          );
+
+          // Set up collision for each checkpoint
+          this.physics.add.overlap(this.playerCar, checkpoint.line, () => {
+            if (index === this.currentCheckpointIndex) {
+              checkpoint.passed = true;
+              this.currentCheckpointIndex++;
+              if (this.currentCheckpointIndex === this.checkpoints.length) {
+                this.allCheckpointsPassed = true;
+              }
+            }
+          });
+          checkpoint.line.setVisible(false);
+
+          return checkpoint.line;
+        });
+
+        this.currentCheckpointIndex = 0;
+        this.allCheckpointsPassed = false;
 
         this.cpuCars = [
           // ... [Add CPU cars]
@@ -176,13 +133,39 @@ export const KartRace = (domElement) => {
           callbackScope: this,
           repeat: 2,
         });
-        this.isColliding = false; // Flag to track collision state
+
+        this.isColliding = false;
         this.physics.add.overlap(this.playerCar, this.startingLine, () => {
-          if (this.isRaceStarted && !this.isColliding) {
+          if (
+            this.isRaceStarted &&
+            !this.isColliding &&
+            this.kartGameUtils.allCheckpointsPassed()
+          ) {
             this.lapCount++;
             this.lapText.setText("Laps: " + this.lapCount);
+            this.kartGameUtils.spawnHazard(); // Call the function from KartRaceUtils
             this.isColliding = true;
+            // Reset checkpoint states for the next lap
+            this.checkpoints.forEach(
+              (checkpoint) => (checkpoint.passed = false)
+            );
+            this.currentCheckpointIndex = 0;
+            this.allCheckpointsPassed = false;
           }
+        });
+
+        this.checkpointLines.forEach((line, index) => {
+          this.physics.add.overlap(this.playerCar, line, () => {
+            if (index === this.currentCheckpointIndex) {
+              this.check;
+
+              points[index].passed = true;
+              this.currentCheckpointIndex++;
+              if (this.currentCheckpointIndex === this.checkpoints.length) {
+                this.allCheckpointsPassed = true;
+              }
+            }
+          });
         });
       },
 
@@ -191,7 +174,6 @@ export const KartRace = (domElement) => {
           return;
         }
 
-        // Car control logic
         if (this.cursors.left.isDown) {
           this.playerCar.setAngularVelocity(-150);
         } else if (this.cursors.right.isDown) {
@@ -199,17 +181,19 @@ export const KartRace = (domElement) => {
         } else {
           this.playerCar.setAngularVelocity(0);
         }
+
         if (this.cursors.up.isDown) {
           this.physics.velocityFromRotation(
             this.playerCar.rotation - Math.PI / 2,
-            200,
+            Config.moveSpeed, // Use the moveSpeed from Config
             this.playerCar.body.velocity
           );
         } else {
           this.playerCar.setVelocity(0);
         }
 
-        // Track boundary logic
+        // ... [rest of your update code]
+
         this.kartGameUtils.keepCarOnTrack(
           this.playerCar,
           this.track,
@@ -218,16 +202,6 @@ export const KartRace = (domElement) => {
         this.cpuCars.forEach((car) => {
           this.kartGameUtils.keepCarOnTrack(car, this.track, this.innerTrack);
         });
-
-        // Check if the car is no longer colliding with the line
-        if (
-          this.isColliding &&
-          !this.physics.overlap(this.playerCar, this.startingLine)
-        ) {
-          this.isColliding = false;
-        }
-
-        // Reset collision flag when the car is sufficiently away from the starting line
         if (
           this.isColliding &&
           !this.physics.overlap(this.playerCar, this.startingLine)
