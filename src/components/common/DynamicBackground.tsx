@@ -1,9 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-
 // Function to generate random Tailwind classes for size and color
-const generateRandomClasses = () => {
+const generateRandomClasses = (): string => {
   const sizes = ["w-6 h-6", "w-12 h-12", "w-16 h-16", "w-24 h-24"];
   const colors = [
     "bg-red-500",
@@ -20,8 +19,12 @@ const generateRandomClasses = () => {
   return `${size} ${color} animate-pulse`;
 };
 
+interface AnimatedElementProps {
+  onEnd: () => void;
+}
+
 // Component for individual animated elements
-const AnimatedElement = ({ onEnd }) => {
+const AnimatedElement: React.FC<AnimatedElementProps> = ({ onEnd }) => {
   const randomClasses = generateRandomClasses();
 
   useEffect(() => {
@@ -42,21 +45,25 @@ const AnimatedElement = ({ onEnd }) => {
   );
 };
 
-const DynamicBackground = ({ creationInterval = 100 }) => {
-  // creationInterval determines how often a new shape is added (in milliseconds)
+interface DynamicBackgroundProps {
+  creationInterval?: number;
+}
 
-  const [elements, setElements] = useState([]);
+const DynamicBackground: React.FC<DynamicBackgroundProps> = ({
+  creationInterval = 100,
+}) => {
+  const [elements, setElements] = useState<JSX.Element[]>([]);
 
   // Function to add a new element
-  const addElement = () => {
+  const addElement = (): void => {
     setElements((prevElements) => [
       ...prevElements,
-      <AnimatedElement key={Math.random()} onEnd={() => removeElement()} />,
+      <AnimatedElement key={Math.random()} onEnd={removeElement} />,
     ]);
   };
 
   // Function to remove an element
-  const removeElement = () => {
+  const removeElement = (): void => {
     setElements((prevElements) => prevElements.slice(1));
   };
 

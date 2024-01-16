@@ -1,23 +1,34 @@
+import Phaser from "phaser";
+
+interface Track {
+  x: number;
+  y: number;
+  radius: number; // Add the 'radius' property
+}
+
 export class KartRaceUtils {
-  constructor(scene) {
+  private scene: GameScene;
+
+  constructor(scene: GameScene) {
     this.scene = scene;
   }
 
-  // Function to keep the player car within the outer track and outside the inner track boundaries
-  keepCarOnTrack(car, outerTrack, innerTrack, delta) {
-    // Utility function to get scaled dimensions
-    const getScaledDimensions = (sprite) => {
+  keepCarOnTrack(
+    car: Phaser.Physics.Arcade.Sprite,
+    outerTrack: Track,
+    innerTrack: Track,
+    delta: number
+  ) {
+    const getScaledDimensions = (sprite: Phaser.GameObjects.Sprite) => {
       return {
         width: sprite.width * sprite.scaleX,
         height: sprite.height * sprite.scaleY,
       };
     };
 
-    // Get scaled dimensions of the car
     const { width: scaledWidth, height: scaledHeight } =
       getScaledDimensions(car);
 
-    // Calculate distances to the tracks
     const distanceToOuter = Phaser.Math.Distance.Between(
       car.x,
       car.y,
@@ -31,11 +42,9 @@ export class KartRaceUtils {
       innerTrack.y
     );
 
-    // Calculate max and min distances for the tracks
     const outerMaxDistance = outerTrack.radius - scaledWidth / 2;
     const innerMinDistance = innerTrack.radius + scaledWidth / 2;
 
-    // Reposition car if it's outside the track boundaries
     if (distanceToOuter > outerMaxDistance) {
       this.repositionCar(car, outerTrack, outerMaxDistance, delta);
     } else if (distanceToInner < innerMinDistance) {
@@ -43,7 +52,7 @@ export class KartRaceUtils {
     }
   }
 
-  repositionCar(car, track, distance) {
+  repositionCar(car: any, track: any, distance: any) {
     const angle = Phaser.Math.Angle.Between(track.x, track.y, car.x, car.y);
     car.x = track.x + distance * Math.cos(angle);
     car.y = track.y + distance * Math.sin(angle);
@@ -59,12 +68,10 @@ export class KartRaceUtils {
   }
 
   updateCountdown() {
-    const currentNumber = parseInt(this.scene.countdownText.text);
+    const currentNumber = parseInt(this.scene.countdownText.text, 10);
     if (currentNumber > 1) {
-      console.log("hit 1");
       this.scene.countdownText.setText(String(currentNumber - 1));
     } else if (currentNumber === 1) {
-      console.log("hit 2");
       this.scene.countdownText.setText("START!");
       this.scene.time.delayedCall(
         1000,
@@ -78,7 +85,11 @@ export class KartRaceUtils {
     }
   }
 
-  static isCarCrossingLine(car, lineY, lastYPosition) {
+  isCarCrossingLine(
+    car: Phaser.Physics.Arcade.Sprite,
+    lineY: number,
+    lastYPosition: number
+  ): boolean {
     const carCrossedLine =
       (lastYPosition > lineY && car.y < lineY) ||
       (lastYPosition < lineY && car.y > lineY);
@@ -117,12 +128,16 @@ export class KartRaceUtils {
       [0, 0, 40, 0, 20, 34],
       0xff0000
     );
-    this.scene.physics.world.enable(hazard);
-    this.scene.hazards.add(hazard);
 
-    // Add collision between the player car and the hazard
+    this.scene.physics.world.enable(hazard);
+
+    // Explicitly type hazard.body as Phaser.Physics.Arcade.Body
+    const hazardBody = hazard.body as Phaser.Physics.Arcade.Body;
+
     this.scene.physics.add.collider(this.scene.playerCar, hazard);
-    hazard.body.setImmovable(true);
+
+    // Now you can use setImmovable on hazardBody
+    hazardBody.setImmovable(true);
   }
 }
 
@@ -148,4 +163,54 @@ export class Config {
   static get rotationSpeed() {
     return 50000;
   }
+}
+
+export type GameScene = Phaser.Scene & {
+  kartGameUtils: KartRaceUtils;
+  track: Phaser.GameObjects.Arc;
+  innerTrack: Phaser.GameObjects.Arc;
+  hazards: Phaser.Physics.Arcade.Group;
+  startingLine: Phaser.GameObjects.Rectangle;
+  playerCar: Phaser.Physics.Arcade.Sprite;
+  checkpoints: Checkpoint[];
+  checkpointLines: Phaser.GameObjects.Rectangle[];
+  currentCheckpointIndex: number;
+  allCheckpointsPassed: boolean;
+  cpuCars: Phaser.Physics.Arcade.Sprite[];
+  cursors: Phaser.Types.Input.Keyboard.CursorKeys;
+  isRaceStarted: boolean;
+  lapCount: number;
+  lapText: Phaser.GameObjects.Text;
+  countdownText: Phaser.GameObjects.Text;
+  isColliding: boolean;
+};
+
+export type Checkpoint = {
+  x: number;
+  y: number;
+  passed: boolean;
+  line?: Phaser.GameObjects.Rectangle | null; // Define the line property
+};
+
+export interface KartRaceUtils {
+  keepCarOnTrack(
+    car: Phaser.Physics.Arcade.Sprite,
+    outerTrack: Track,
+    innerTrack: Track,
+    delta: number
+  ): void;
+  repositionCar(
+    car: Phaser.Physics.Arcade.Sprite,
+    track: Track,
+    distance: number,
+    delta: number
+  ): void;
+  updateCountdown(): void;
+  isCarCrossingLine(
+    car: Phaser.Physics.Arcade.Sprite,
+    lineY: number,
+    lastYPosition: number
+  ): boolean;
+  allCheckpointsPassed(): boolean;
+  spawnHazard(): void;
 }

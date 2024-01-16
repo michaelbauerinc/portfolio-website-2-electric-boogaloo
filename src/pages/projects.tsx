@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import type { NextPage } from "next";
 import Navbar from "../components/common/Navbar";
 import ProjectCard, { ProjectProps } from "../components/projects/ProjectCard";
-import GitHubApiClient from "../components/lib/GitHubApiClient";
+import GitHubApiClient from "../components/lib/GithubApiClient";
 import IconsBackground from "../components/common/IconsBackground";
 
 import "../app/globals.css";

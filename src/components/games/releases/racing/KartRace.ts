@@ -1,7 +1,7 @@
 import Phaser from "phaser";
-import { KartRaceUtils, Config } from "./Static";
+import { KartRaceUtils, Config, GameScene, Checkpoint } from "./Static";
 
-export const KartRace = (domElement) => {
+export const KartRace = (domElement: HTMLElement) => {
   return {
     type: Phaser.AUTO,
     width: Config.gameWidth,
@@ -15,12 +15,11 @@ export const KartRace = (domElement) => {
       },
     },
     scene: {
-      preload: function () {
-        // Load the image as a texture
+      preload: function (this: GameScene) {
         this.load.image("car", "/kart.png");
       },
 
-      create: function () {
+      create: function (this: GameScene) {
         this.kartGameUtils = new KartRaceUtils(this);
 
         this.track = this.add.circle(400, 300, Config.trackRadius, 0x666666);
@@ -40,7 +39,7 @@ export const KartRace = (domElement) => {
           Phaser.Physics.Arcade.STATIC_BODY
         );
 
-        this.hazards = this.physics.add.group(); // Create a group for hazards
+        this.hazards = this.physics.add.group();
 
         const startingLineLength = Config.trackRadius - Config.innerTrackRadius;
         const startingLineY =
@@ -63,44 +62,37 @@ export const KartRace = (domElement) => {
           .setScale(0.1)
           .setAngle(90);
 
-        // Calculate the scaled dimensions
-        const scaledWidth = this.playerCar.displayWidth; // or this.playerCar.width * 0.1
-        const scaledHeight = this.playerCar.displayHeight; // or this.playerCar.height * 0.1
+        const scaledWidth = this.playerCar.displayWidth;
+        const scaledHeight = this.playerCar.displayHeight;
 
-        // Update the physics body size
-        this.playerCar.body.setSize(scaledWidth, scaledHeight);
+        if (this.playerCar.body) {
+          this.playerCar.body.setSize(scaledWidth, scaledHeight);
+          const offsetX = (this.playerCar.width - scaledWidth) / 2;
+          const offsetY = (this.playerCar.height - scaledHeight) / 2;
+          this.playerCar.body.setOffset(offsetX, offsetY);
+          this.playerCar.setCollideWorldBounds(true);
+        }
 
-        // Optionally, you can also set the offset of the physics body if needed
-        // This is often necessary to ensure the body is centered on the sprite
-        const offsetX = (this.playerCar.width - scaledWidth) / 2;
-        const offsetY = (this.playerCar.height - scaledHeight) / 2;
-        this.playerCar.body.setOffset(offsetX, offsetY);
-        this.playerCar.setCollideWorldBounds(true);
-
-        // Define checkpoints
         this.checkpoints = [
           {
             x: 400,
             y: -300 + Config.innerTrackRadius + startingLineLength / 2,
             passed: false,
           },
-        ];
+        ] as Checkpoint[];
 
-        // Calculate the length of the checkpoint lines
         const checkpointLineLength =
           Config.trackRadius - Config.innerTrackRadius;
 
-        // Render checkpoints
         this.checkpointLines = this.checkpoints.map((checkpoint, index) => {
-          // Set the y position of the checkpoint line
           const checkpointLineY = checkpoint.y + Config.innerTrackRadius;
 
           checkpoint.line = this.add.rectangle(
             checkpoint.x,
             checkpointLineY,
-            5, // Width of the line
-            checkpointLineLength, // Length of the line
-            0xff0000 // Color
+            5,
+            checkpointLineLength,
+            0xff0000
           );
 
           this.physics.world.enable(
@@ -108,7 +100,6 @@ export const KartRace = (domElement) => {
             Phaser.Physics.Arcade.STATIC_BODY
           );
 
-          // Set up collision for each checkpoint
           this.physics.add.overlap(this.playerCar, checkpoint.line, () => {
             if (index === this.currentCheckpointIndex) {
               checkpoint.passed = true;
@@ -126,21 +117,21 @@ export const KartRace = (domElement) => {
         this.currentCheckpointIndex = 0;
         this.allCheckpointsPassed = false;
 
-        this.cpuCars = [
-          // ... [Add CPU cars]
-        ];
+        this.cpuCars = [];
 
-        this.cursors = this.input.keyboard.createCursorKeys();
+        if (this.input.keyboard) {
+          this.cursors = this.input.keyboard.createCursorKeys();
+        }
 
         this.isRaceStarted = false;
         this.lapCount = 0;
         this.lapText = this.add.text(700, 20, "Laps: 0", {
           fontSize: "20px",
-          fill: "#FFF",
+          color: "#FFF",
         });
 
         this.countdownText = this.add
-          .text(400, 200, "3", { fontSize: "64px", fill: "#FFF" })
+          .text(400, 200, "3", { fontSize: "64px", color: "#FFF" })
           .setOrigin(0.5);
         this.time.addEvent({
           delay: 1000,
@@ -158,9 +149,8 @@ export const KartRace = (domElement) => {
           ) {
             this.lapCount++;
             this.lapText.setText("Laps: " + this.lapCount);
-            this.kartGameUtils.spawnHazard(); // Call the function from KartRaceUtils
+            this.kartGameUtils.spawnHazard();
             this.isColliding = true;
-            // Reset checkpoint states for the next lap
             this.checkpoints.forEach(
               (checkpoint) => (checkpoint.passed = false)
             );
@@ -172,9 +162,7 @@ export const KartRace = (domElement) => {
         this.checkpointLines.forEach((line, index) => {
           this.physics.add.overlap(this.playerCar, line, () => {
             if (index === this.currentCheckpointIndex) {
-              this.check;
-
-              points[index].passed = true;
+              this.checkpoints[index].passed = true;
               this.currentCheckpointIndex++;
               if (this.currentCheckpointIndex === this.checkpoints.length) {
                 this.allCheckpointsPassed = true;
@@ -184,12 +172,12 @@ export const KartRace = (domElement) => {
         });
       },
 
-      update: function (time, delta) {
+      update: function (this: GameScene, time: number, delta: number) {
         if (!this.isRaceStarted) {
           return;
         }
 
-        const deltaInSeconds = delta / 1000; // Convert delta to seconds
+        const deltaInSeconds = delta / 1000;
 
         if (this.cursors.left.isDown) {
           this.playerCar.setAngularVelocity(
@@ -203,7 +191,7 @@ export const KartRace = (domElement) => {
           this.playerCar.setAngularVelocity(0);
         }
 
-        if (this.cursors.up.isDown) {
+        if (this.cursors.up.isDown && this.playerCar.body) {
           this.physics.velocityFromRotation(
             this.playerCar.rotation - Math.PI / 2,
             Config.moveSpeed * deltaInSeconds,
@@ -220,8 +208,14 @@ export const KartRace = (domElement) => {
           delta
         );
         this.cpuCars.forEach((car) => {
-          this.kartGameUtils.keepCarOnTrack(car, this.track, this.innerTrack);
+          this.kartGameUtils.keepCarOnTrack(
+            car,
+            this.track,
+            this.innerTrack,
+            delta
+          );
         });
+
         if (
           this.isColliding &&
           !this.physics.overlap(this.playerCar, this.startingLine)

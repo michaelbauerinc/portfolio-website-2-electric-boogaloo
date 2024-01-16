@@ -1,7 +1,15 @@
 import React, { useEffect, useState, useRef } from "react";
-import { iconsAndTitles } from "../lib/Static";
+import { iconsAndTitles } from "../lib/Static"; // Assuming this is correctly typed in its module
 
-const rainbowColors = [
+interface Position {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  color: string;
+}
+
+const rainbowColors: string[] = [
   "text-red-500",
   "text-orange-500",
   "text-yellow-500",
@@ -11,7 +19,7 @@ const rainbowColors = [
   "text-purple-500",
 ];
 
-const generateInitialPositionAndVelocity = () => {
+const generateInitialPositionAndVelocity = (): Position => {
   return {
     x:
       Math.random() *
@@ -25,22 +33,20 @@ const generateInitialPositionAndVelocity = () => {
   };
 };
 
-const IconsBackground = () => {
-  const [numberOfIcons, setNumberOfIcons] = useState(50); // Set the default number of icons
-  const [speedFactor, setSpeedFactor] = useState(0.01); // Set the default speed factor
-  const [positions, setPositions] = useState([]);
-  const requestRef = useRef();
-  const lastTimestamp = useRef();
+const IconsBackground: React.FC = () => {
+  const [numberOfIcons, setNumberOfIcons] = useState<number>(50);
+  const [speedFactor, setSpeedFactor] = useState<number>(0.01);
+  const [positions, setPositions] = useState<Position[]>([]);
+  const requestRef = useRef<number>();
+  const lastTimestamp = useRef<number>();
 
   useEffect(() => {
     setPositions(
-      Array.from({ length: numberOfIcons }, () =>
-        generateInitialPositionAndVelocity()
-      )
+      Array.from({ length: numberOfIcons }, generateInitialPositionAndVelocity)
     );
   }, [numberOfIcons]);
 
-  const updatePositions = (timestamp) => {
+  const updatePositions = (timestamp: number) => {
     if (!lastTimestamp.current) lastTimestamp.current = timestamp;
     const deltaTime = timestamp - lastTimestamp.current;
 
@@ -71,7 +77,7 @@ const IconsBackground = () => {
 
   useEffect(() => {
     requestRef.current = requestAnimationFrame(updatePositions);
-    return () => cancelAnimationFrame(requestRef.current);
+    return () => cancelAnimationFrame(requestRef.current!);
   }, []);
 
   return (
@@ -96,7 +102,7 @@ const IconsBackground = () => {
       <div
         className="absolute top-0 left-0 w-full h-full"
         style={{
-          backgroundColor: `rgba(var(--background-start-rgb), 0.6)`, // This line has been updated
+          backgroundColor: `rgba(var(--background-start-rgb), 0.6)`,
           zIndex: 1,
         }}
       ></div>

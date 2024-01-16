@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, ChangeEvent, FormEvent, ReactElement } from "react";
 import { FiSend, FiLoader, FiCheckCircle, FiXCircle } from "react-icons/fi";
 import {
   FaFacebookF,
@@ -7,22 +7,30 @@ import {
   FaInstagram,
 } from "react-icons/fa";
 
+interface FormData {
+  name: string;
+  email: string;
+  message: string;
+}
+
 const Contact: React.FC = () => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     name: "",
     email: "",
     message: "",
   });
-  const [isLoading, setIsLoading] = useState(false);
-  const [submissionMessage, setSubmissionMessage] = useState("");
-  const [messageColor, setMessageColor] = useState("");
-  const [icon, setIcon] = useState(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [submissionMessage, setSubmissionMessage] = useState<string>("");
+  const [messageColor, setMessageColor] = useState<string>("");
+  const [icon, setIcon] = useState<ReactElement | null>(null);
 
-  const handleChange = (e) => {
+  const handleChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
 

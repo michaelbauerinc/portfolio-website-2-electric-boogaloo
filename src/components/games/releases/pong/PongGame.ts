@@ -1,8 +1,25 @@
 import Phaser from "phaser";
 
+// Define types for the game scene and utilities
+type GameScene = Phaser.Scene & {
+  scoreLeft: number;
+  scoreRight: number;
+  scoreText: Phaser.GameObjects.Text;
+  instructionsText: Phaser.GameObjects.Text;
+  ball: Phaser.Physics.Arcade.Sprite | null; // Added null type
+  paddleLeft: Phaser.Physics.Arcade.Sprite | null; // Added null type
+  paddleRight: Phaser.Physics.Arcade.Sprite;
+  cursors: Phaser.Types.Input.Keyboard.CursorKeys;
+  gameUtils: GameUtils;
+  hitboxLeft: Phaser.GameObjects.Zone | null; // Declare hitboxLeft property
+  hitboxRight: Phaser.GameObjects.Zone | null; // Declare hitboxRight property
+};
+
 // Utility class for game-related functions
 class GameUtils {
-  constructor(scene) {
+  private scene: GameScene;
+
+  constructor(scene: GameScene) {
     this.scene = scene;
   }
 
@@ -20,7 +37,7 @@ class GameUtils {
     this.updateScoreText();
   }
 
-  updateScore(winner) {
+  updateScore(winner: "left" | "right") {
     if (winner === "left") {
       this.scene.scoreLeft++;
     } else {
@@ -41,14 +58,18 @@ class GameUtils {
   }
 
   increaseBallSpeed() {
-    let velocity = this.scene.ball.body.velocity;
-    velocity.x *= 1.1; // Increase speed by 10%
-    velocity.y *= 1.1;
-    this.scene.ball.setVelocity(velocity.x, velocity.y);
+    if (this.scene.ball) {
+      const velocity = this.scene.ball?.body?.velocity; // Added optional chaining
+      if (velocity) {
+        velocity.x *= 1.1; // Increase speed by 10%
+        velocity.y *= 1.1;
+        this.scene.ball.setVelocity(velocity.x, velocity.y);
+      }
+    }
   }
 }
 
-export const PongGame = (domElement) => {
+export const PongGame = (domElement: HTMLElement) => {
   return {
     type: Phaser.AUTO,
     width: 800,
@@ -68,11 +89,11 @@ export const PongGame = (domElement) => {
       scoreText: null,
       instructionsText: null,
 
-      preload: function () {
+      preload(this: GameScene) {
         // No assets to load in this version
       },
 
-      create: function () {
+      create(this: GameScene) {
         // Create game utility instance
         this.gameUtils = new GameUtils(this);
 
@@ -80,25 +101,34 @@ export const PongGame = (domElement) => {
         this.paddleLeft = this.physics.add
           .sprite(100, 300, "paddle")
           .setImmovable();
-        this.paddleLeft.body.setSize(20, 100);
-        this.paddleLeft.displayWidth = 10;
-        this.paddleLeft.displayHeight = 100;
 
-        // Create right paddle closer to the center
+        if (this.paddleLeft.body) {
+          // Added null check
+          this.paddleLeft.body.setSize(20, 100);
+          this.paddleLeft.displayWidth = 10;
+          this.paddleLeft.displayHeight = 100;
+        }
+
         this.paddleRight = this.physics.add
           .sprite(700, 300, "paddle")
           .setImmovable();
-        this.paddleRight.body.setSize(10, 100);
-        this.paddleRight.displayWidth = 10;
-        this.paddleRight.displayHeight = 100;
+        // Create right paddle closer to the center
+        if (this.paddleRight.body) {
+          this.paddleRight.body.setSize(10, 100);
+          this.paddleRight.displayWidth = 10;
+          this.paddleRight.displayHeight = 100;
+        }
 
         // Create ball
         this.ball = this.physics.add
           .sprite(400, 300, "ball")
           .setCollideWorldBounds(true)
           .setBounce(1);
-        this.ball.body.setCircle(10); // Assuming the ball is circular
-        this.ball.setVelocity(200, 30);
+        if (this.ball && this.ball.body) {
+          // Added null check
+          this.ball.body.setCircle(10); // Assuming the ball is circular
+          this.ball.setVelocity(200, 30);
+        }
 
         // Paddle-ball collision handling
         this.physics.add.collider(this.ball, this.paddleLeft, () =>
@@ -109,36 +139,36 @@ export const PongGame = (domElement) => {
         );
 
         // Input
-        this.cursors = this.input.keyboard.createCursorKeys();
+        if (this.input.keyboard) {
+          this.cursors = this.input.keyboard.createCursorKeys();
+          // Reset button
+          this.input.keyboard.on("keydown-R", () => {
+            this.gameUtils.resetGame();
+          });
+        }
 
         // Display score
         this.scoreText = this.add
-          .text(400, 50, "0 - 0", { fontSize: "32px", fill: "#FFF" })
+          .text(400, 50, "0 - 0", { fontSize: "32px", color: "#FFF" }) // Use 'color' instead of 'fill'
           .setOrigin(0.5);
         this.instructionsText = this.add
           .text(400, 550, "Press R to Reset", {
             fontSize: "24px",
-            fill: "#FFF",
-          })
+            color: "#FFF",
+          }) // Use 'color' instead of 'fill'
           .setOrigin(0.5);
-
-        // Reset button
-        this.input.keyboard.on("keydown-R", () => {
-          this.gameUtils.resetGame();
-        });
 
         // Add left and right hitboxes
         this.hitboxLeft = this.add
-          .zone(0, 300)
-          .setSize(1, 500)
+          .zone(0, 300, 1, 500) // Provide width and height arguments
           .setOrigin(0, 0.5);
         this.physics.world.enable(
           this.hitboxLeft,
           Phaser.Physics.Arcade.STATIC_BODY
         );
+
         this.hitboxRight = this.add
-          .zone(900, 300)
-          .setSize(1, 500)
+          .zone(900, 300, 1, 500) // Provide width and height arguments
           .setOrigin(1, 0.5);
         this.physics.world.enable(
           this.hitboxRight,
@@ -150,40 +180,48 @@ export const PongGame = (domElement) => {
           this.ball,
           this.hitboxLeft,
           () => this.gameUtils.updateScore("right"),
-          null,
+          undefined, // Use undefined instead of null
           this
         );
         this.physics.add.overlap(
           this.ball,
           this.hitboxRight,
           () => this.gameUtils.updateScore("left"),
-          null,
+          undefined, // Use undefined instead of null
           this
         );
 
-        this.gameUtils.resetBall(); // Reset the ball when the game is first created
+        if (this.ball) {
+          this.gameUtils.resetBall(); // Reset the ball when the game is first created
+        }
         this.gameUtils.updateScoreText(); // Initialize the score text
       },
 
-      update: function () {
+      update(this: GameScene) {
         // Reduced paddle movement sensitivity
         const paddleSpeed = 5;
 
         // Control left paddle
-        if (this.cursors.up.isDown) {
+        if (this.cursors.up.isDown && this.paddleLeft) {
           this.paddleLeft.y -= paddleSpeed;
-        } else if (this.cursors.down.isDown) {
+        } else if (this.cursors.down.isDown && this.paddleLeft) {
           this.paddleLeft.y += paddleSpeed;
         }
 
         // Control right paddle (for simplicity, we'll make it follow the ball)
-        this.paddleRight.y = this.ball.y;
+        if (this.paddleRight && this.ball) {
+          this.paddleRight.y = this.ball.y;
+        }
 
         // Ball and paddle boundary checks
-        if (this.paddleLeft.y < 50) this.paddleLeft.y = 50;
-        else if (this.paddleLeft.y > 550) this.paddleLeft.y = 550;
-        if (this.paddleRight.y < 50) this.paddleRight.y = 50;
-        else if (this.paddleRight.y > 550) this.paddleRight.y = 550;
+        if (this.paddleLeft) {
+          if (this.paddleLeft.y < 50) this.paddleLeft.y = 50;
+          else if (this.paddleLeft.y > 550) this.paddleLeft.y = 550;
+        }
+        if (this.paddleRight) {
+          if (this.paddleRight.y < 50) this.paddleRight.y = 50;
+          else if (this.paddleRight.y > 550) this.paddleRight.y = 550;
+        }
       },
     },
   };

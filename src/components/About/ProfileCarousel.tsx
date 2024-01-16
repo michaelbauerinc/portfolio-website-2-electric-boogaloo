@@ -11,7 +11,7 @@ const ProfileCarousel = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const getIconAndTitleForCarousel = (carouselNumber) => {
+  const getIconAndTitleForCarousel = (carouselNumber: number) => {
     const index = (currentIndex + carouselNumber) % iconsAndTitles.length;
     return iconsAndTitles[index];
   };
