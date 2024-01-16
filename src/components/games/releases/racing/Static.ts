@@ -4,7 +4,20 @@ export class KartRaceUtils {
   }
 
   // Function to keep the player car within the outer track and outside the inner track boundaries
-  keepCarOnTrack(car, outerTrack, innerTrack) {
+  keepCarOnTrack(car, outerTrack, innerTrack, delta) {
+    // Utility function to get scaled dimensions
+    const getScaledDimensions = (sprite) => {
+      return {
+        width: sprite.width * sprite.scaleX,
+        height: sprite.height * sprite.scaleY,
+      };
+    };
+
+    // Get scaled dimensions of the car
+    const { width: scaledWidth, height: scaledHeight } =
+      getScaledDimensions(car);
+
+    // Calculate distances to the tracks
     const distanceToOuter = Phaser.Math.Distance.Between(
       car.x,
       car.y,
@@ -18,13 +31,15 @@ export class KartRaceUtils {
       innerTrack.y
     );
 
-    const outerMaxDistance = outerTrack.radius - car.width / 2;
-    const innerMinDistance = innerTrack.radius + car.width / 2;
+    // Calculate max and min distances for the tracks
+    const outerMaxDistance = outerTrack.radius - scaledWidth / 2;
+    const innerMinDistance = innerTrack.radius + scaledWidth / 2;
 
+    // Reposition car if it's outside the track boundaries
     if (distanceToOuter > outerMaxDistance) {
-      this.repositionCar(car, outerTrack, outerMaxDistance);
+      this.repositionCar(car, outerTrack, outerMaxDistance, delta);
     } else if (distanceToInner < innerMinDistance) {
-      this.repositionCar(car, innerTrack, innerMinDistance);
+      this.repositionCar(car, innerTrack, innerMinDistance, delta);
     }
   }
 
@@ -128,6 +143,9 @@ export class Config {
     return 500;
   }
   static get moveSpeed() {
-    return 500;
+    return 90000;
+  }
+  static get rotationSpeed() {
+    return 50000;
   }
 }

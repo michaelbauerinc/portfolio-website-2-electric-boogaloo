@@ -16,7 +16,8 @@ export const KartRace = (domElement) => {
     },
     scene: {
       preload: function () {
-        // ... [preload function code]
+        // Load the image as a texture
+        this.load.image("car", "/kart.png");
       },
 
       create: function () {
@@ -38,6 +39,7 @@ export const KartRace = (domElement) => {
           this.innerTrack,
           Phaser.Physics.Arcade.STATIC_BODY
         );
+
         this.hazards = this.physics.add.group(); // Create a group for hazards
 
         const startingLineLength = Config.trackRadius - Config.innerTrackRadius;
@@ -58,9 +60,22 @@ export const KartRace = (domElement) => {
 
         this.playerCar = this.physics.add
           .sprite(400, Config.startingLineY, "car")
-          .setCircle(15);
+          .setScale(0.1)
+          .setAngle(90);
+
+        // Calculate the scaled dimensions
+        const scaledWidth = this.playerCar.displayWidth; // or this.playerCar.width * 0.1
+        const scaledHeight = this.playerCar.displayHeight; // or this.playerCar.height * 0.1
+
+        // Update the physics body size
+        this.playerCar.body.setSize(scaledWidth, scaledHeight);
+
+        // Optionally, you can also set the offset of the physics body if needed
+        // This is often necessary to ensure the body is centered on the sprite
+        const offsetX = (this.playerCar.width - scaledWidth) / 2;
+        const offsetY = (this.playerCar.height - scaledHeight) / 2;
+        this.playerCar.body.setOffset(offsetX, offsetY);
         this.playerCar.setCollideWorldBounds(true);
-        this.playerCar.setAngle(90);
 
         // Define checkpoints
         this.checkpoints = [
@@ -169,15 +184,21 @@ export const KartRace = (domElement) => {
         });
       },
 
-      update: function () {
+      update: function (time, delta) {
         if (!this.isRaceStarted) {
           return;
         }
 
+        const deltaInSeconds = delta / 1000; // Convert delta to seconds
+
         if (this.cursors.left.isDown) {
-          this.playerCar.setAngularVelocity(-150);
+          this.playerCar.setAngularVelocity(
+            -Config.rotationSpeed * deltaInSeconds
+          );
         } else if (this.cursors.right.isDown) {
-          this.playerCar.setAngularVelocity(150);
+          this.playerCar.setAngularVelocity(
+            Config.rotationSpeed * deltaInSeconds
+          );
         } else {
           this.playerCar.setAngularVelocity(0);
         }
@@ -185,19 +206,18 @@ export const KartRace = (domElement) => {
         if (this.cursors.up.isDown) {
           this.physics.velocityFromRotation(
             this.playerCar.rotation - Math.PI / 2,
-            Config.moveSpeed, // Use the moveSpeed from Config
+            Config.moveSpeed * deltaInSeconds,
             this.playerCar.body.velocity
           );
         } else {
           this.playerCar.setVelocity(0);
         }
 
-        // ... [rest of your update code]
-
         this.kartGameUtils.keepCarOnTrack(
           this.playerCar,
           this.track,
-          this.innerTrack
+          this.innerTrack,
+          delta
         );
         this.cpuCars.forEach((car) => {
           this.kartGameUtils.keepCarOnTrack(car, this.track, this.innerTrack);
