@@ -158,10 +158,10 @@ export class Config {
     return 500;
   }
   static get moveSpeed() {
-    return 90000;
+    return 50000;
   }
   static get rotationSpeed() {
-    return 50000;
+    return 20000;
   }
 }
 
