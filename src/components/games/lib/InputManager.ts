@@ -5,11 +5,13 @@ export class InputManager {
   public cursors: Phaser.Types.Input.Keyboard.CursorKeys;
   private keyMap: Map<string, Phaser.Input.Keyboard.Key>;
   private gamepad: Phaser.Input.Gamepad.Gamepad | null = null;
+  private actionMap: Map<string, Array<() => boolean>>;
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
     this.cursors = this.scene.input.keyboard.createCursorKeys();
     this.keyMap = new Map();
+    this.actionMap = new Map();
 
     if (this.scene.input.gamepad) {
       this.scene.input.gamepad.once("connected", (pad) => {
@@ -60,6 +62,33 @@ export class InputManager {
     context?: any
   ) {
     this.scene.input.on("pointerup", callback, context);
+  }
+
+  bindActionToKeys(actionName: string, keyCodes: Array<string>) {
+    const newConditions = keyCodes.map(
+      (keyCode) => () => this.isKeyDown(keyCode)
+    );
+    const existingConditions = this.actionMap.get(actionName) || [];
+    this.actionMap.set(actionName, existingConditions.concat(newConditions));
+  }
+
+  bindActionToGamepadButtons(actionName: string, buttonCodes: Array<number>) {
+    const newConditions = buttonCodes.map(
+      (buttonCode) => () => this.isGamepadButtonDown(buttonCode)
+    );
+    const existingConditions = this.actionMap.get(actionName) || [];
+    this.actionMap.set(actionName, existingConditions.concat(newConditions));
+  }
+
+  isActionActive(actionName: string): boolean {
+    const conditions = this.actionMap.get(actionName);
+    if (!conditions) return false;
+
+    for (const condition of conditions) {
+      if (condition()) return true;
+    }
+
+    return false;
   }
 
   // Additional methods as needed

@@ -94,24 +94,5 @@ export class TransformManager {
       duration: duration,
     });
   }
-
-  // utility method for creating a ground object that spans the canvas width. Useful for games such as sidescrollers that use y-gravity
-  initGround() {
-    const groundTexture = this.scene.textures.get("ground").getSourceImage();
-    const groundHeight = groundTexture.height;
-
-    // Calculate the y-coordinate for the ground
-    const groundY = this.scene.game.canvas.height - groundHeight / 2; // Adjust for the new scaled height
-
-    // Create the ground sprite
-    const ground = this.scene.physics.add.sprite(0, groundY, "ground");
-    const groundScaleX = this.scene.game.canvas.width / ground.width;
-    ground.setScale(groundScaleX, 0.5); // Scales ground to fit canvas width
-    ground.setImmovable(true);
-    ground.setOrigin(0, 0); // Keep the origin at the top-left
-    ground.body.allowGravity = false;
-    this.scene.gameState.state.ground = ground;
-  }
-
   // Additional utility methods as needed
 }
