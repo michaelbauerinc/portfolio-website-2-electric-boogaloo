@@ -14,7 +14,10 @@ const PhaserGame: React.FC<PhaserGameProps> = ({ gameId }) => {
     let gameInstance: Phaser.Game | null = null;
 
     if (gameRef.current) {
+      // Pass the game configuration to the Phaser game
       gameInstance = new Phaser.Game(getGameInstance(gameId, gameRef.current));
+
+      // Cleanup function to destroy the game when the component unmounts
       return () => gameInstance?.destroy(true);
     }
   }, [gameId]);

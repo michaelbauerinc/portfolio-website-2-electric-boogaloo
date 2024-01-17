@@ -10,6 +10,7 @@ import "../app/globals.css";
 const gamesData = [
   { title: "Pong Game", gameId: "pong" },
   { title: "Kart Race", gameId: "racing" },
+  { title: "Side Scroll", gameId: "sidescroller" },
   // Add more games here with unique gameId
   // Example: { title: 'Puzzle Game', gameId: 'puzzle-game' },
 ];
