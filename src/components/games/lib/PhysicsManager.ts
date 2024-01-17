@@ -157,6 +157,32 @@ export class PhysicsManager {
     return closestIntersection;
   }
 
+  createPlatform(
+    x: number,
+    y: number,
+    texture: string,
+    scaleX: number = 1,
+    scaleY: number = 0.5,
+    collisions: boolean = true
+  ): Phaser.Physics.Arcade.Sprite {
+    const platform = this.scene.gameState.state.platforms
+      .create(x, y, texture)
+      .setScale(scaleX, scaleY)
+      .refreshBody();
+    platform.setImmovable(true);
+    platform.body.allowGravity = false;
+    platform.setOrigin(0.5, 0.5); // Center the origin if needed
+
+    // Set up collision with the player or other objects here if necessary
+    if (collisions)
+      this.scene.physics.add.collider(
+        this.scene.gameState.state.player,
+        platform
+      );
+
+    return platform;
+  }
+
   // utility method for creating a ground object that spans the canvas width. Useful for games such as sidescrollers that use y-gravity
   initGround() {
     const groundTexture = this.scene.textures.get("ground").getSourceImage();

@@ -32,7 +32,7 @@ export class AnimationManager {
           ...animationConfig,
           key: animationKey,
         });
-        console.log(`Animation '${animationKey}' created successfully.`);
+        // console.log(`Animation '${animationKey}' created successfully.`);
       } catch (error) {
         console.error(`Error creating animation '${animationKey}':`, error);
       }
@@ -47,7 +47,7 @@ export class AnimationManager {
     if (sprite.anims && (!sprite.anims.isPlaying || !ignoreIfPlaying)) {
       try {
         sprite.play(animationKey);
-        console.log(`Playing animation '${animationKey}' on sprite.`);
+        // console.log(`Playing animation '${animationKey}' on sprite.`);
       } catch (error) {
         console.error(`Error playing animation '${animationKey}':`, error);
       }
@@ -58,7 +58,7 @@ export class AnimationManager {
     if (sprite.anims) {
       try {
         sprite.stop();
-        console.log(`Animation stopped on sprite.`);
+        // console.log(`Animation stopped on sprite.`);
       } catch (error) {
         console.error(`Error stopping animation on sprite:`, error);
       }
@@ -69,7 +69,7 @@ export class AnimationManager {
     if (sprite.anims && sprite.anims.isPlaying) {
       try {
         sprite.anims.pause();
-        console.log(`Animation paused on sprite.`);
+        // console.log(`Animation paused on sprite.`);
       } catch (error) {
         console.error(`Error pausing animation on sprite:`, error);
       }
@@ -80,7 +80,7 @@ export class AnimationManager {
     if (sprite.anims && sprite.anims.isPaused) {
       try {
         sprite.anims.resume();
-        console.log(`Animation resumed on sprite.`);
+        // console.log(`Animation resumed on sprite.`);
       } catch (error) {
         console.error(`Error resuming animation on sprite:`, error);
       }
