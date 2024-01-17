@@ -29,7 +29,7 @@ class SideScrollerScene extends BaseScene {
     // Create platforms, background, etc.
     // Example: this.platforms = this.physicsManager.createStaticGroup();
 
-    this.transformManager.initGround(this);
+    this.transformManager.initGround();
 
     // Create and set up player sprite
 
@@ -38,19 +38,8 @@ class SideScrollerScene extends BaseScene {
     this.gameState.state.player.setScale(0.25); // Set the scale to 25%
 
     // Setup animations for the player
-    this.animationManager.createAnimation("run", "player", {
-      key: "run",
-      frames: this.anims.generateFrameNumbers("player", { start: 0, end: 4 }),
-      frameRate: 10,
-      repeat: -1, // To make it loop continuously
-    });
-
-    this.animationManager.createAnimation("jump", "player", {
-      key: "jump",
-      frames: this.anims.generateFrameNumbers("jump", { start: 1, end: 1 }),
-      frameRate: 10,
-      repeat: -1, // To make it loop continuously
-    });
+    this.animationManager.createAnimation("run", "player", 0, 4);
+    this.animationManager.createAnimation("jump", "player", 1, 2);
 
     // Setup collider between player and ground
     this.physicsManager.setupCollider(

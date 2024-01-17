@@ -9,10 +9,24 @@ export class AnimationManager {
 
   createAnimation(
     animationKey: string,
-    spriteName: string,
-    animationConfig: Phaser.Types.Animations.Animation
+    key: string,
+    frameStart: number,
+    frameEnd: number,
+    frameRate: number = 10,
+    repeat: number = -1,
+    spriteName: string
   ) {
     if (!this.scene.anims.exists(animationKey)) {
+      const animationConfig: Phaser.Types.Animations.Animation = {
+        key: key,
+        frames: this.scene.anims.generateFrameNumbers(key, {
+          start: frameStart,
+          end: frameEnd,
+        }),
+        frameRate: frameRate,
+        repeat: repeat, // To make it loop continuously
+      };
+
       try {
         this.scene.anims.create({
           ...animationConfig,
