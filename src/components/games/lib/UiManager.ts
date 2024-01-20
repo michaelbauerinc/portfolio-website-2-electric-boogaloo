@@ -17,9 +17,12 @@ export class UIManager {
     x: number,
     y: number,
     text: string,
-    style: Phaser.Types.GameObjects.Text.TextStyle
+    style: Phaser.Types.GameObjects.Text.TextStyle,
+    fixedPosition: boolean = true
   ): Phaser.GameObjects.Text {
-    return this.scene.add.text(x, y, text, style);
+    const createdText = this.scene.add.text(x, y, text, style);
+    if (fixedPosition) createdText.setScrollFactor(0);
+    return createdText;
   }
 
   createButton(

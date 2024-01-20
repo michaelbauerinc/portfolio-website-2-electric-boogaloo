@@ -2,13 +2,13 @@
 import type { NextPage } from "next";
 import Link from "next/link";
 import Navbar from "../components/common/Navbar";
-import DynamicBackground from "../components/common/DynamicBackground";
+import IconsBackground from "../components/common/IconsBackground";
 
 const Home: NextPage = () => {
   return (
     <div>
       <Navbar />
-      <DynamicBackground />
+      <IconsBackground />
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
           {/* Apply dark mode conditional classes */}

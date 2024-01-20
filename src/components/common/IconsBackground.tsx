@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useState, useRef } from "react";
 import { iconsAndTitles } from "../lib/Static"; // Assuming this is correctly typed in its module
 

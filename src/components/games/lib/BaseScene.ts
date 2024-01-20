@@ -6,6 +6,7 @@ import {
   PhysicsManager,
   TransformManager,
   GameState,
+  CameraManager,
 } from ".";
 
 export class BaseScene extends Phaser.Scene {
@@ -15,6 +16,7 @@ export class BaseScene extends Phaser.Scene {
   protected physicsManager: PhysicsManager;
   protected transformManager: TransformManager;
   public gameState: GameState;
+  public cameraManager: CameraManager;
 
   constructor(sceneKey: string) {
     super(sceneKey);
@@ -25,12 +27,13 @@ export class BaseScene extends Phaser.Scene {
   }
 
   create() {
+    this.gameState = new GameState();
     this.animationManager = new AnimationManager(this);
     this.inputManager = new InputManager(this);
     this.uiManager = new UIManager(this);
     this.physicsManager = new PhysicsManager(this);
     this.transformManager = new TransformManager(this);
-    this.gameState = new GameState(); // Initialize GameState
+    this.cameraManager = new CameraManager(this);
 
     // Set up animations, UI, inputs, physics, etc.
     this.setupAnimations();

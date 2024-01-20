@@ -5,3 +5,4 @@ export * from "./PhysicsManager";
 export * from "./TransformManager";
 export * from "./UiManager";
 export * from "./GameState";
+export * from "./CameraManager";

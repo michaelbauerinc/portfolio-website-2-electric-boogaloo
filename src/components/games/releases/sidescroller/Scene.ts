@@ -1,9 +1,63 @@
+// src/components/games/releases/sidescroller/Scene.ts
+
 import Phaser from "phaser";
 import { BaseScene, InputManager, GameState } from "../../lib"; // Adjust the path as needed
 
+export class CollectibleObject {
+  private scene: Phaser.Scene;
+  public collectible: Phaser.GameObjects.Polygon;
+
+  constructor(scene: BaseScene, x: number, y: number) {
+    this.scene = scene;
+
+    const points = [0, 0, 40, 0, 20, 34];
+
+    this.collectible = this.scene.add.polygon(
+      x,
+      y,
+      points,
+      0xffffff
+    ) as Phaser.GameObjects.Polygon;
+
+    this.scene.physics.world.enable(this.collectible);
+
+    const body = this.collectible.body as Phaser.Physics.Arcade.Body;
+    body.setAllowGravity(false);
+    body.setImmovable(true);
+
+    this.scene.gameState.state.collectibleGroup.add(this.collectible);
+
+    this.scene.physicsManager.setupOverlap(
+      this.scene.gameState.state.player,
+      this.collectible,
+      this.onPlayerCollectibleCollision.bind(this)
+    );
+  }
+
+  private onPlayerCollectibleCollision(
+    player: Phaser.Physics.Arcade.Sprite,
+    collectible: Phaser.GameObjects.Polygon
+  ) {
+    collectible.destroy();
+
+    const index =
+      this.scene.gameState.state.spawnedObjects.indexOf(collectible);
+    if (index !== -1) {
+      this.scene.gameState.state.spawnedObjects.splice(index, 1);
+    }
+
+    this.scene.gameState.state.score += 10;
+    this.scene.uiManager.updateText(
+      this.scene.gameState.state.scoreText,
+      `Score: ${this.scene.gameState.state.score}`
+    );
+  }
+}
+
 class SideScrollerScene extends BaseScene {
-  private player: Phaser.Physics.Arcade.Sprite; // Declare the player property
-  private ground: Phaser.Physics.Arcade.Sprite;
+  private player: Phaser.Physics.Arcade.Sprite;
+  private boundsX: number = 1600;
+  private boundsY: number = 2000;
 
   constructor() {
     super("SideScrollerScene");
@@ -11,67 +65,187 @@ class SideScrollerScene extends BaseScene {
 
   preload() {
     super.preload();
-    // Load player spritesheet and other assets here
-    this.load.spritesheet("player", "/rabbit.png", {
-      frameWidth: 200,
-      frameHeight: 300,
-    });
-    // Load the ground image (adjust the key and path)
-    this.load.image("ground", "/ground.png");
-    this.load.image("platform", "/platform.png");
-    // Load other assets (background, platforms, etc.)
+    this.loadAssets();
   }
 
   create() {
     super.create();
+    this.initializeState();
+    this.configureWorld();
+    this.setupPlayer();
+    this.setupCollectibles();
+    this.setupPlatforms();
+    this.setupCamera();
+    this.initInput();
+    this.physicsManager.createBoundaries();
+  }
 
+  update(time, delta) {
+    super.update(time, delta);
+    this.handlePlayerMovement();
+    this.physicsManager.oscillateObjects(time, delta);
+    this.physicsManager.handleMovingPlatformPayloads(time);
+  }
+
+  private loadAssets() {
+    this.load.spritesheet("player", "/rabbit.png", {
+      frameWidth: 200,
+      frameHeight: 300,
+    });
+    this.load.image("ground", "/ground.png");
+    this.load.image("platform", "/platform.png");
+  }
+
+  private initializeState() {
+    this.gameState.state.spawnedObjects = [];
+    this.gameState.state.spawnedObjectPositions = [];
+    this.gameState.state.score = 0;
+    this.gameState.state.scoreText = this.uiManager.createText(
+      16,
+      16,
+      "Score: 0",
+      { fontSize: "32px", fill: "#fff" }
+    );
+  }
+
+  private configureWorld() {
+    this.physics.world.setBounds(0, 0, this.boundsX, this.boundsY);
     this.physicsManager.initGround();
+  }
 
-    // Create and set up player sprite
-    this.physicsManager.addSprite("player", 100, 100, 0.25);
-
-    // Setup animations for the player
+  private setupPlayer() {
+    this.physicsManager.addPlayer("player", 100, this.boundsY - 400, 0.25);
     this.animationManager.createAnimation("run", "player", 0, 4);
-    this.animationManager.createAnimation("jump", "player", 1, 1);
-
+    this.animationManager.createAnimation("jump", "player", 1, 2);
+    this.physicsManager.setupCollider(
+      this.gameState.state.player,
+      this.gameState.state.ground
+    );
     // Setup collider between player and ground
     this.physicsManager.setupCollider(
       this.gameState.state.player,
       this.gameState.state.ground
     );
-
-    this.initInput();
-
-    // Set global gravity
-    this.physicsManager.setGlobalGravity(0, 300);
-    this.initPlatforms();
   }
 
-  update(time, delta) {
-    super.update(time, delta);
+  setupCollectibles() {
+    // Assuming you have a group for collectibles
+    this.gameState.state.collectibleGroup =
+      this.physicsManager.createStaticGroup();
 
-    this.handlePlayerMovement();
-    this.physicsManager.screenWrap(this.gameState.state.player);
+    this.spawnObjectInRandomLocation(
+      20, // Number of collectibles
+      30, // Buffer distance to avoid overlaps
+      (x, y) => {
+        // Create and return a collectible object here
+        // Assuming CollectibleObject is a class that creates a collectible
+        const collectible = new CollectibleObject(this, x, y);
+        return collectible.collectible;
+      },
+      this.gameState.state.collectibleGroup
+    );
   }
 
-  initPlatforms() {
-    // Create a static group for platforms
-    this.gameState.state.platforms = this.physicsManager.createStaticGroup();
-    // Add individual platforms
-    const platform1 = this.physicsManager.createPlatform(
-      400,
-      368,
-      "platform",
-      0.15,
-      0.1
+  setupPlatforms() {
+    // Assuming you have a group for platforms
+    this.gameState.state.platformGroup =
+      this.physicsManager.createStaticGroup();
+
+    this.spawnObjectInRandomLocation(
+      50, // Number of platforms
+      200, // Buffer distance
+      (x, y) => {
+        // Define the oscillation properties
+        const amplitude = Phaser.Math.FloatBetween(0.8, 2);
+        const direction = Math.random() < 0.5 ? "horizontal" : "vertical";
+        const phaseOffset = Phaser.Math.FloatBetween(0, 6);
+
+        // Create the platform
+        const platform = this.physicsManager.createPlatform(
+          x,
+          y,
+          "platform",
+          0.15,
+          0.1
+        );
+
+        // Add the platform to the platform group
+        this.gameState.state.platformGroup.add(platform);
+
+        // Add the platform as an oscillating object
+        this.physicsManager.addOscillatingObject(
+          platform,
+          amplitude,
+          direction,
+          phaseOffset
+        );
+
+        return platform;
+      },
+      this.gameState.state.platformGroup
     );
-    const platform2 = this.physicsManager.createPlatform(
-      600,
-      250,
-      "platform",
-      0.15,
-      0.1
-    );
+  }
+
+  spawnObjectInRandomLocation(
+    numObjects,
+    buffer = 50, // Default buffer set to 50
+    createObjectCallback,
+    group
+  ) {
+    for (let i = 0; i < numObjects; i++) {
+      let position = this.findValidPosition(buffer, group);
+      if (position.valid) {
+        const newObject = createObjectCallback(position.x, position.y);
+        group.add(newObject); // Add the new object to the group
+        this.gameState.state.spawnedObjects.push({
+          x: position.x,
+          y: position.y,
+        });
+        this.gameState.state.spawnedObjectPositions.push({
+          x: position.x,
+          y: position.y,
+        });
+      }
+    }
+  }
+
+  findValidPosition(buffer, group) {
+    for (let attempts = 0; attempts < 100; attempts++) {
+      let x = Phaser.Math.Between(buffer, this.boundsX - buffer);
+      let y = Phaser.Math.Between(buffer, this.boundsY - buffer);
+
+      if (this.isPositionValid(x, y, buffer, group)) {
+        return { x, y, valid: true };
+      }
+    }
+    return { x: 0, y: 0, valid: false };
+  }
+
+  isPositionValid(x, y, buffer, group) {
+    // Check against other objects in the group
+    const isClearOfGroup = !group.getChildren().some((object) => {
+      return Phaser.Math.Distance.Between(x, y, object.x, object.y) < buffer;
+    });
+
+    // Check against world bounds with buffer
+    const withinBoundsX = x > buffer && x < this.boundsX - buffer;
+    const withinBoundsY = y > buffer && y < this.boundsY - buffer;
+
+    return isClearOfGroup && withinBoundsX && withinBoundsY;
+  }
+
+  setupCamera() {
+    // Get a reference to the current scene's camera
+    const camera = this.cameras.main;
+
+    // Make the camera follow the player
+    camera.startFollow(this.gameState.state.player);
+
+    // Set camera bounds to match the world bounds
+    camera.setBounds(0, 0, this.boundsX, this.boundsY); // Use the same values as your world bounds
+
+    // Optional: Set a deadzone
+    // camera.setDeadzone(100, 50); // Adjust the values according to your game's needs
   }
 
   initInput() {
@@ -153,7 +327,7 @@ export const SideScrollerGame = (domElement) => {
       default: "arcade",
       arcade: {
         gravity: { y: 300 },
-        debug: true,
+        debug: false,
       },
     },
     scene: [SideScrollerScene],

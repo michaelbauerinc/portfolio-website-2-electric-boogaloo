@@ -94,5 +94,25 @@ export class TransformManager {
       duration: duration,
     });
   }
+
+  // used to oscillate an object without a physics body, use physicsmanager if you need to oscillate with physics body
+  oscillateObject(
+    object: Phaser.GameObjects.GameObject,
+    minY: number,
+    maxY: number,
+    duration: number
+  ) {
+    this.scene.tweens.add({
+      targets: object,
+      yoyo: true,
+      repeat: -1, // -1 means it will repeat indefinitely
+      ease: "Sine.easeInOut",
+      duration: duration,
+      y: {
+        from: minY,
+        to: maxY,
+      },
+    });
+  }
   // Additional utility methods as needed
 }
