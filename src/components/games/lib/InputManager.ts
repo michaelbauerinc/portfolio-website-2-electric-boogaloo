@@ -1,22 +1,29 @@
 import Phaser from "phaser";
+import { BaseScene } from ".";
+
+type ActionCondition = (() => boolean) & { isMobileControl?: boolean };
 
 export class InputManager {
-  private scene: Phaser.Scene;
-  public cursors: Phaser.Types.Input.Keyboard.CursorKeys;
+  private scene: BaseScene;
+  public cursors: Phaser.Types.Input.Keyboard.CursorKeys | null = null;
   private keyMap: Map<string, Phaser.Input.Keyboard.Key>;
   private gamepad: Phaser.Input.Gamepad.Gamepad | null = null;
-  private actionMap: Map<string, Array<() => boolean>>;
+  private actionMap: Map<string, Array<ActionCondition>>;
 
-  constructor(scene: Phaser.Scene) {
+  constructor(scene: BaseScene) {
     this.scene = scene;
-    this.cursors = this.scene.input.keyboard.createCursorKeys();
+    if (this.scene.input.keyboard != null)
+      this.cursors = this.scene.input.keyboard.createCursorKeys();
     this.keyMap = new Map();
     this.actionMap = new Map();
 
     if (this.scene.input.gamepad) {
-      this.scene.input.gamepad.once("connected", (pad) => {
-        this.gamepad = pad;
-      });
+      this.scene.input.gamepad.once(
+        "connected",
+        (pad: Phaser.Input.Gamepad.Gamepad) => {
+          this.gamepad = pad;
+        }
+      );
     }
 
     // Enable touch input for the scene
@@ -69,7 +76,7 @@ export class InputManager {
       (keyCode) => () => this.isKeyDown(keyCode)
     );
     const existingConditions = this.actionMap.get(actionName) || [];
-    this.actionMap.set(actionName, existingConditions.concat(newConditions));
+    this.actionMap.set(actionName, [...existingConditions, ...newConditions]);
   }
 
   bindActionToGamepadButtons(actionName: string, buttonCodes: Array<number>) {
@@ -77,7 +84,7 @@ export class InputManager {
       (buttonCode) => () => this.isGamepadButtonDown(buttonCode)
     );
     const existingConditions = this.actionMap.get(actionName) || [];
-    this.actionMap.set(actionName, existingConditions.concat(newConditions));
+    this.actionMap.set(actionName, [...existingConditions, ...newConditions]);
   }
 
   isActionActive(actionName: string): boolean {
@@ -91,5 +98,27 @@ export class InputManager {
     return false;
   }
 
-  // Additional methods as needed
+  activateAction(actionName: string) {
+    const mobileControlCondition = () => true;
+    mobileControlCondition.isMobileControl = true; // Tagging the condition
+
+    const existingConditions = this.actionMap.get(actionName) || [];
+    this.actionMap.set(actionName, [
+      ...existingConditions,
+      mobileControlCondition,
+    ]);
+  }
+
+  deactivateAction(actionName: string) {
+    const existingConditions = this.actionMap.get(actionName) || [];
+    const filteredConditions = existingConditions.filter(
+      (condition) => !condition.isMobileControl
+    );
+
+    if (filteredConditions.length > 0) {
+      this.actionMap.set(actionName, filteredConditions);
+    } else {
+      this.actionMap.delete(actionName); // Remove the action if no conditions are left
+    }
+  }
 }

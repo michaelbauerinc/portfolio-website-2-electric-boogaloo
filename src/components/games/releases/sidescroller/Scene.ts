@@ -4,8 +4,8 @@ import Phaser from "phaser";
 import { BaseScene, InputManager, GameState } from "../../lib"; // Adjust the path as needed
 
 export class CollectibleObject {
-  private scene: Phaser.Scene;
-  public collectible: Phaser.GameObjects.Polygon;
+  private scene: BaseScene;
+  public collectible: Phaser.GameObjects.Sprite;
 
   constructor(scene: BaseScene, x: number, y: number) {
     this.scene = scene;
@@ -41,17 +41,27 @@ export class CollectibleObject {
   }
 
   private onPlayerCollectibleCollision(
-    player: Phaser.Physics.Arcade.Sprite,
-    collectible: Phaser.GameObjects.Polygon
+    player: Phaser.Physics.Arcade.Sprite, // Ensure player reference is passed
+    collectible: Phaser.Physics.Arcade.Sprite // Ensure collectible reference is passed
   ) {
-    collectible.destroy();
+    // First, check if the collectible still exists
+    if (collectible && collectible.active) {
+      collectible.destroy();
 
+      this.removeFromSpawnedObjects(collectible);
+      this.updateScore();
+    }
+  }
+
+  private removeFromSpawnedObjects(collectible: Phaser.Physics.Arcade.Sprite) {
     const index =
       this.scene.gameState.state.spawnedObjects.indexOf(collectible);
     if (index !== -1) {
       this.scene.gameState.state.spawnedObjects.splice(index, 1);
     }
+  }
 
+  private updateScore() {
     this.scene.gameState.state.score += 10;
     this.scene.uiManager.updateText(
       this.scene.gameState.state.scoreText,
@@ -61,7 +71,6 @@ export class CollectibleObject {
 }
 
 class SideScrollerScene extends BaseScene {
-  private player: Phaser.Physics.Arcade.Sprite;
   private boundsX: number = 1600;
   private boundsY: number = 2000;
 
@@ -84,19 +93,25 @@ class SideScrollerScene extends BaseScene {
     this.setupCamera();
     this.initInput();
     this.physicsManager.createBoundaries();
+    this.uiManager.createOnScreenControls();
   }
 
-  update(time, delta) {
+  update(time: number, delta: number) {
     super.update(time, delta);
     this.handlePlayerMovement();
-    this.physicsManager.oscillateObjects(time, delta);
+    this.physicsManager.oscillateObjects(time);
     this.physicsManager.handleMovingPlatformPayloads(time);
+    this.uiManager.resizeGameCanvas();
   }
 
   private loadAssets() {
-    this.load.spritesheet("player", "/rabbit.png", {
-      frameWidth: 200,
-      frameHeight: 300,
+    this.load.spritesheet("player", "/potato.png", {
+      frameWidth: 180,
+      frameHeight: 180,
+    });
+    this.load.spritesheet("player_fall", "/potato_fall.png", {
+      frameWidth: 180,
+      frameHeight: 180,
     });
     this.load.image("ground", "/ground.png");
     this.load.image("platform", "/platform.png");
@@ -108,10 +123,10 @@ class SideScrollerScene extends BaseScene {
     this.gameState.state.spawnedObjectPositions = [];
     this.gameState.state.score = 0;
     this.gameState.state.scoreText = this.uiManager.createText(
-      16,
-      16,
+      5,
+      10,
       "Score: 0",
-      { fontSize: "32px", fill: "#fff" }
+      { fontSize: "32px", color: "purple" }
     );
   }
 
@@ -121,9 +136,10 @@ class SideScrollerScene extends BaseScene {
   }
 
   private setupPlayer() {
-    this.physicsManager.addPlayer("player", 100, this.boundsY - 400, 0.25);
-    this.animationManager.createAnimation("run", "player", 0, 4);
-    this.animationManager.createAnimation("jump", "player", 1, 2);
+    this.physicsManager.addPlayer("player", 100, this.boundsY - 400, 0.5);
+    this.animationManager.createAnimation("run", "player", 0, 16);
+    this.animationManager.createAnimation("idle", "player", 0, 0);
+    this.animationManager.createAnimation("jump", "player_fall", 0, 0);
     this.physicsManager.setupCollider(
       this.gameState.state.player,
       this.gameState.state.ground
@@ -132,6 +148,11 @@ class SideScrollerScene extends BaseScene {
     this.physicsManager.setupCollider(
       this.gameState.state.player,
       this.gameState.state.ground
+    );
+    const body = this.gameState.state.player.body as Phaser.Physics.Arcade.Body;
+    body.setSize(
+      body.width * 0.5, // Adjust the width of the collider
+      body.height * 0.65 // Adjust the height of the collider
     );
   }
 
@@ -163,7 +184,7 @@ class SideScrollerScene extends BaseScene {
       200, // Buffer distance
       (x, y) => {
         // Define the oscillation properties
-        const amplitude = Phaser.Math.FloatBetween(0.8, 2);
+        const amplitude = Phaser.Math.FloatBetween(0.5, 1.3);
         const direction = Math.random() < 0.5 ? "horizontal" : "vertical";
         const phaseOffset = Phaser.Math.FloatBetween(0, 6);
 
@@ -250,33 +271,36 @@ class SideScrollerScene extends BaseScene {
   }
 
   updatePlayerAnimation(isOnGround: boolean) {
-    const velocityX = this.gameState.state.player.body.velocity.x;
-    const velocityY = this.gameState.state.player.body.velocity.y;
+    const playerVelocity = this.gameState.state.player.body.velocity;
+
+    // Prioritize the jump animation when the player is in the air
+    if (!isOnGround) {
+      this.animationManager.playAnimationOn(
+        this.gameState.state.player,
+        "jump",
+        true
+      );
+    }
     // Check if the player is on the ground and moving horizontally
-    if (velocityX !== 0 && isOnGround) {
+    else if (playerVelocity.x !== 0) {
       this.animationManager.playAnimationOn(
         this.gameState.state.player,
         "run",
         true
       );
     }
-    // Check if the player is in the air
-    else if (!isOnGround) {
-      // Adjust this condition based on your jump and fall animations
-      this.animationManager.playAnimationOn(
-        this.gameState.state.player,
-        "jump",
-        false // Force the jump animation to play even if another animation is active
-      );
-    }
     // Player is on the ground but not moving horizontally
     else {
-      this.animationManager.stopAnimationOn(this.gameState.state.player);
+      this.animationManager.playAnimationOn(
+        this.gameState.state.player,
+        "idle",
+        true
+      );
     }
   }
 }
 
-export const SideScrollerGame = (domElement) => {
+export const SideScrollerGame = (domElement: HTMLElement) => {
   return {
     type: Phaser.AUTO,
     width: 800,

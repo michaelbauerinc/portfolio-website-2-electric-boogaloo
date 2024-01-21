@@ -3,13 +3,21 @@
 import Phaser from "phaser";
 import { BaseScene } from "./";
 
+// Define the type for each oscillating object
+interface OscillatingObject {
+  object: Phaser.GameObjects.GameObject; // Replace with a more specific type if possible
+  amplitude: number;
+  direction: "horizontal" | "vertical";
+  phaseOffset: number;
+}
+
 export class PhysicsManager {
   private scene: BaseScene;
 
   constructor(scene: BaseScene) {
     this.scene = scene;
     if (!this.scene.gameState.state.oscillatingObjects) {
-      this.scene.gameState.state.oscillatingObjects = [];
+      this.scene.gameState.state.oscillatingObjects = [] as OscillatingObject[];
     }
   }
 
@@ -17,13 +25,13 @@ export class PhysicsManager {
   addPlayer(name: string, x: number, y: number, scale: number) {
     const player = this.scene.physics.add.sprite(x, y, name);
     this.scene.gameState.state.player = player;
-    this.scene.gameState.state.player.setScale(scale); // Set the scale to 25%
+    this.scene.gameState.state.player.setScale(scale);
   }
 
   setupCollider(
     object1: Phaser.GameObjects.GameObject,
     object2: Phaser.GameObjects.GameObject,
-    callback?: ArcadePhysicsCallback
+    callback?: Phaser.Types.Physics.Arcade.ArcadePhysicsCallback
   ) {
     this.scene.physics.add.collider(object1, object2, callback);
   }
@@ -31,7 +39,7 @@ export class PhysicsManager {
   setupOverlap(
     object1: Phaser.GameObjects.GameObject,
     object2: Phaser.GameObjects.GameObject,
-    callback: ArcadePhysicsCallback
+    callback: any
   ) {
     this.scene.physics.add.overlap(object1, object2, callback);
   }
@@ -42,15 +50,14 @@ export class PhysicsManager {
     return this.scene.physics.add.group(options);
   }
   createStaticGroup(
-    options?: Phaser.Types.Physics.Arcade.StaticGroupCreateConfig
+    options?: Phaser.Types.GameObjects.Group.GroupConfig
   ): Phaser.Physics.Arcade.StaticGroup {
     return this.scene.physics.add.staticGroup(options);
   }
 
   setGravityFor(object: Phaser.GameObjects.GameObject, x: number, y: number) {
-    if (object.body) {
-      object.body.setGravity(x, y);
-    }
+    const body = object.body as Phaser.Physics.Arcade.Body;
+    body.setGravity(x, y);
   }
 
   setGlobalGravity(x: number, y: number) {
@@ -66,9 +73,8 @@ export class PhysicsManager {
   }
 
   setBodyActive(object: Phaser.GameObjects.GameObject, isActive: boolean) {
-    if (object.body) {
-      object.body.enable = isActive;
-    }
+    const body = object.body as Phaser.Physics.Arcade.Body;
+    body.enable = isActive;
   }
 
   setVelocity(
@@ -76,24 +82,17 @@ export class PhysicsManager {
     velocityX: number,
     velocityY: number
   ) {
-    if (object.body) {
-      object.body.setVelocity(velocityX, velocityY);
-    }
-  }
-
-  applyImpulse(
-    object: Phaser.GameObjects.GameObject,
-    impulseX: number,
-    impulseY: number
-  ) {
-    if (object.body) {
-      object.body.applyForce({ x: impulseX, y: impulseY });
-    }
+    const body = object.body as Phaser.Physics.Arcade.Body;
+    body.setVelocity(velocityX, velocityY);
   }
 
   // custom screen wrap built to support both x/y axis from phaser's implementation here
   // https://github.com/phaserjs/phaser/blob/91986c58e53149f73e786b1c1564be75463900a8/src/physics/arcade/World.js#L2464
-  screenWrap(object, wrapX = true, wrapY = false) {
+  screenWrap(
+    object: Phaser.GameObjects.Sprite,
+    wrapX: boolean = true,
+    wrapY: boolean = false
+  ) {
     if (wrapX) {
       object.x = Phaser.Math.Wrap(
         object.x,
@@ -111,7 +110,7 @@ export class PhysicsManager {
   }
 
   lockScreen(
-    object: Phaser.GameObjects.GameObject,
+    object: Phaser.GameObjects.Sprite,
     lockX: boolean = true,
     lockY: boolean = false
   ) {
@@ -195,9 +194,9 @@ export class PhysicsManager {
     );
   }
 
-  createBoundary(x, y, width, height) {
+  createBoundary(x: number, y: number, width: number, height: number) {
     let boundary = this.scene.physics.add
-      .staticImage(x, y, null)
+      .staticImage(x, y, "boundary")
       .setScale(width, height)
       .setImmovable(true);
     boundary.refreshBody().setVisible(false); // Set visibility as needed
@@ -205,8 +204,8 @@ export class PhysicsManager {
   }
 
   calculateDistance(
-    object1: Phaser.GameObjects.GameObject,
-    object2: Phaser.GameObjects.GameObject
+    object1: Phaser.GameObjects.Sprite,
+    object2: Phaser.GameObjects.Sprite
   ): number {
     return Phaser.Math.Distance.Between(
       object1.x,
@@ -217,8 +216,8 @@ export class PhysicsManager {
   }
 
   calculateAngleBetween(
-    object1: Phaser.GameObjects.GameObject,
-    object2: Phaser.GameObjects.GameObject
+    object1: Phaser.GameObjects.Sprite,
+    object2: Phaser.GameObjects.Sprite
   ): number {
     return Phaser.Math.Angle.Between(
       object1.x,
@@ -230,7 +229,7 @@ export class PhysicsManager {
 
   // Raycast method
   raycast(
-    startPoint: Phaser.Math.Vector2,
+    startPoint: Phaser.Geom.Line,
     endPoint: Phaser.Math.Vector2,
     targets: Phaser.GameObjects.GameObject[]
   ): Phaser.GameObjects.GameObject | null {
@@ -239,26 +238,28 @@ export class PhysicsManager {
 
     targets.forEach((target) => {
       if (target.body) {
-        const hitArea = target.body.isCircle
-          ? new Phaser.Geom.Circle(target.x, target.y, target.body.radius)
+        const body = target.body as Phaser.Physics.Arcade.Body;
+
+        const hitArea = body.isCircle
+          ? new Phaser.Geom.Circle(body.x, body.y, body.radius)
           : new Phaser.Geom.Rectangle(
-              target.x - target.body.halfWidth,
-              target.y - target.body.halfHeight,
-              target.body.width,
-              target.body.height
+              body.x - body.halfWidth,
+              body.y - body.halfHeight,
+              body.width,
+              body.height
             );
 
         const intersection = Phaser.Geom.Intersects.GetLineToRectangle(
           startPoint,
           endPoint,
-          hitArea
+          [hitArea]
         );
         if (intersection) {
           const distance = Phaser.Math.Distance.Between(
-            startPoint.x,
-            startPoint.y,
-            intersection.x,
-            intersection.y
+            startPoint.x1,
+            startPoint.y1,
+            hitArea.x,
+            hitArea.y
           );
           if (distance < closestDistance) {
             closestDistance = distance;
@@ -277,7 +278,7 @@ export class PhysicsManager {
     texture: string,
     scaleX: number = 1,
     scaleY: number = 0.5,
-    callback?: ArcadePhysicsCallback,
+    callback?: Phaser.Types.Physics.Arcade.ArcadePhysicsCallback,
     collisions: boolean = true,
     setImmovable: boolean = true // Platforms are typically immovable
   ): Phaser.Physics.Arcade.Sprite {
@@ -299,7 +300,7 @@ export class PhysicsManager {
   }
 
   handleMovingPlatformPayloads(
-    time,
+    time: number,
     payloads = [this.scene.gameState.state.player]
   ) {
     // Check if the player is on a moving platform
@@ -348,30 +349,37 @@ export class PhysicsManager {
     this.scene.gameState.state.ground = ground;
   }
 
-  addOscillatingObject(object, amplitude, direction, phaseOffset = 0) {
-    // Assign a unique ID to the object (if it doesn't already have one)
-    object.id = object.id || Phaser.Math.RND.uuid();
+  addOscillatingObject(
+    object: Phaser.GameObjects.GameObject,
+    amplitude: number,
+    direction: "horizontal" | "vertical",
+    phaseOffset = 0
+  ) {
+    const newObject: OscillatingObject = {
+      object: object,
+      amplitude: amplitude,
+      direction: direction,
+      phaseOffset: phaseOffset,
+    };
 
-    this.scene.gameState.state.oscillatingObjects.push({
-      id: object.id,
-      object,
-      amplitude,
-      direction,
-      phaseOffset,
-    });
+    this.scene.gameState.state.oscillatingObjects.push(newObject);
   }
 
-  oscillateObjects(time) {
+  oscillateObjects(time: number) {
     this.scene.gameState.state.oscillatingObjects.forEach(
-      ({ object, amplitude, direction, phaseOffset }) => {
+      ({ object, amplitude, direction, phaseOffset }: OscillatingObject) => {
         const scaledTime = time * 0.002; // Adjust the scaling factor as needed
         const oscillationVelocity =
-          Math.cos(scaledTime + phaseOffset) * amplitude * 100; // Increase amplitude
+          Math.cos(scaledTime + phaseOffset) * amplitude * 100;
 
         if (direction === "horizontal") {
-          object.body.setVelocityX(oscillationVelocity);
+          (object.body as Phaser.Physics.Arcade.Body).setVelocityX(
+            oscillationVelocity
+          );
         } else if (direction === "vertical") {
-          object.body.setVelocityY(oscillationVelocity);
+          (object.body as Phaser.Physics.Arcade.Body).setVelocityY(
+            oscillationVelocity
+          );
         }
       }
     );
@@ -430,7 +438,7 @@ export class PhysicsManager {
     const boundsY = this.scene.physics.world.bounds.height;
 
     // Check against other objects in the group
-    const isClearOfGroup = !group.getChildren().some((object) => {
+    const isClearOfGroup = !group.getChildren().some((object: any) => {
       return Phaser.Math.Distance.Between(x, y, object.x, object.y) < buffer;
     });
 
@@ -441,9 +449,8 @@ export class PhysicsManager {
     return isClearOfGroup && withinBoundsX && withinBoundsY;
   }
 
-  stopOscillating(object) {
-    object.x = 0;
-    object.y = 0;
-    // Remove the object from the oscillating objects map
+  stopOscillating(object: Phaser.GameObjects.GameObject) {
+    const body = object.body as Phaser.Physics.Arcade.Body;
+    body.setVelocity(0);
   }
 }

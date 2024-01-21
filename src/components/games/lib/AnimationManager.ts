@@ -13,8 +13,7 @@ export class AnimationManager {
     frameStart: number,
     frameEnd: number,
     frameRate: number = 10,
-    repeat: number = -1,
-    spriteName: string
+    repeat: number = -1
   ) {
     if (!this.scene.anims.exists(animationKey)) {
       const animationConfig: Phaser.Types.Animations.Animation = {
@@ -44,14 +43,15 @@ export class AnimationManager {
     animationKey: string,
     ignoreIfPlaying: boolean = false
   ) {
-    if (sprite.anims && (!sprite.anims.isPlaying || !ignoreIfPlaying)) {
-      try {
-        sprite.play(animationKey);
-        // console.log(`Playing animation '${animationKey}' on sprite.`);
-      } catch (error) {
-        console.error(`Error playing animation '${animationKey}':`, error);
-      }
+    // if (sprite.anims && (!sprite.anims.isPlaying || !ignoreIfPlaying)) {
+    try {
+      // console.log()
+      sprite.play(animationKey, ignoreIfPlaying);
+      // console.log(`Playing animation '${animationKey}' on sprite.`);
+    } catch (error) {
+      console.error(`Error playing animation '${animationKey}':`, error);
     }
+    // }
   }
 
   stopAnimationOn(sprite: Phaser.GameObjects.Sprite) {
@@ -84,31 +84,6 @@ export class AnimationManager {
       } catch (error) {
         console.error(`Error resuming animation on sprite:`, error);
       }
-    }
-  }
-
-  setupAnimationsWithFrames(
-    animationKey: string,
-    spriteName: string,
-    startFrame: number,
-    endFrame: number,
-    frameRate: number,
-    repeat: number
-  ) {
-    const frames = this.scene.anims.generateFrameNumbers(spriteName, {
-      start: startFrame,
-      end: endFrame,
-    });
-
-    if (frames.length > 0) {
-      this.createAnimation(animationKey, spriteName, {
-        key: animationKey,
-        frames: frames,
-        frameRate: frameRate,
-        repeat: repeat,
-      });
-    } else {
-      console.error(`No frames found for the '${animationKey}' animation.`);
     }
   }
 }
