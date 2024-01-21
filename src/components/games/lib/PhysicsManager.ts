@@ -377,6 +377,70 @@ export class PhysicsManager {
     );
   }
 
+  // Add the following methods to the PhysicsManager class
+
+  spawnObjectInRandomLocation(
+    numObjects: number,
+    buffer: number = 50, // Default buffer set to 50
+    createObjectCallback: (
+      x: number,
+      y: number
+    ) => Phaser.GameObjects.GameObject,
+    group: Phaser.Physics.Arcade.Group
+  ) {
+    for (let i = 0; i < numObjects; i++) {
+      let position = this.findValidPosition(buffer, group);
+      if (position.valid) {
+        const newObject = createObjectCallback(position.x, position.y);
+        group.add(newObject); // Add the new object to the group
+        this.scene.gameState.state.spawnedObjects.push({
+          x: position.x,
+          y: position.y,
+        });
+        this.scene.gameState.state.spawnedObjectPositions.push({
+          x: position.x,
+          y: position.y,
+        });
+      }
+    }
+  }
+
+  findValidPosition(buffer: number, group: Phaser.Physics.Arcade.Group) {
+    const boundsX = this.scene.physics.world.bounds.width;
+    const boundsY = this.scene.physics.world.bounds.height;
+
+    for (let attempts = 0; attempts < 100; attempts++) {
+      let x = Phaser.Math.Between(buffer, boundsX - 200);
+      let y = Phaser.Math.Between(buffer, boundsY - 200);
+
+      if (this.isPositionValid(x, y, buffer, group)) {
+        return { x, y, valid: true };
+      }
+    }
+    return { x: 0, y: 0, valid: false };
+  }
+
+  isPositionValid(
+    x: number,
+    y: number,
+    buffer: number,
+    group: Phaser.Physics.Arcade.Group
+  ) {
+    const boundsX = this.scene.physics.world.bounds.width;
+    const boundsY = this.scene.physics.world.bounds.height;
+
+    // Check against other objects in the group
+    const isClearOfGroup = !group.getChildren().some((object) => {
+      return Phaser.Math.Distance.Between(x, y, object.x, object.y) < buffer;
+    });
+
+    // Check against world bounds with buffer
+    const withinBoundsX = x > buffer && x < boundsX - buffer;
+    const withinBoundsY = y > buffer && y < boundsY - buffer;
+
+    return isClearOfGroup && withinBoundsX && withinBoundsY;
+  }
+
   stopOscillating(object) {
     object.x = 0;
     object.y = 0;

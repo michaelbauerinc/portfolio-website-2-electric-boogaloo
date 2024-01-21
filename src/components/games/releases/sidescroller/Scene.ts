@@ -9,21 +9,27 @@ export class CollectibleObject {
 
   constructor(scene: BaseScene, x: number, y: number) {
     this.scene = scene;
-
-    const points = [0, 0, 40, 0, 20, 34];
-
-    this.collectible = this.scene.add.polygon(
-      x,
-      y,
-      points,
-      0xffffff
-    ) as Phaser.GameObjects.Polygon;
+    this.collectible = this.scene.physics.add
+      .sprite(x, y, "coin")
+      .setScale(0.1, 0.1)
+      .setImmovable(true);
 
     this.scene.physics.world.enable(this.collectible);
 
     const body = this.collectible.body as Phaser.Physics.Arcade.Body;
     body.setAllowGravity(false);
     body.setImmovable(true);
+    // Adjust the size of the collider
+    body.setSize(
+      this.collectible.width * 0.5, // Adjust the width of the collider
+      this.collectible.height * 0.5 // Adjust the height of the collider
+    );
+
+    // Optionally, you can also offset the collider if needed
+    body.setOffset(
+      (this.collectible.width - body.width) / 2,
+      (this.collectible.height - body.height) / 2
+    );
 
     this.scene.gameState.state.collectibleGroup.add(this.collectible);
 
@@ -94,6 +100,7 @@ class SideScrollerScene extends BaseScene {
     });
     this.load.image("ground", "/ground.png");
     this.load.image("platform", "/platform.png");
+    this.load.image("coin", "/coin.png");
   }
 
   private initializeState() {
@@ -133,9 +140,9 @@ class SideScrollerScene extends BaseScene {
     this.gameState.state.collectibleGroup =
       this.physicsManager.createStaticGroup();
 
-    this.spawnObjectInRandomLocation(
-      20, // Number of collectibles
-      30, // Buffer distance to avoid overlaps
+    this.physicsManager.spawnObjectInRandomLocation(
+      100, // Number of collectibles
+      50, // Buffer distance to avoid overlaps
       (x, y) => {
         // Create and return a collectible object here
         // Assuming CollectibleObject is a class that creates a collectible
@@ -151,7 +158,7 @@ class SideScrollerScene extends BaseScene {
     this.gameState.state.platformGroup =
       this.physicsManager.createStaticGroup();
 
-    this.spawnObjectInRandomLocation(
+    this.physicsManager.spawnObjectInRandomLocation(
       50, // Number of platforms
       200, // Buffer distance
       (x, y) => {
@@ -184,54 +191,6 @@ class SideScrollerScene extends BaseScene {
       },
       this.gameState.state.platformGroup
     );
-  }
-
-  spawnObjectInRandomLocation(
-    numObjects,
-    buffer = 50, // Default buffer set to 50
-    createObjectCallback,
-    group
-  ) {
-    for (let i = 0; i < numObjects; i++) {
-      let position = this.findValidPosition(buffer, group);
-      if (position.valid) {
-        const newObject = createObjectCallback(position.x, position.y);
-        group.add(newObject); // Add the new object to the group
-        this.gameState.state.spawnedObjects.push({
-          x: position.x,
-          y: position.y,
-        });
-        this.gameState.state.spawnedObjectPositions.push({
-          x: position.x,
-          y: position.y,
-        });
-      }
-    }
-  }
-
-  findValidPosition(buffer, group) {
-    for (let attempts = 0; attempts < 100; attempts++) {
-      let x = Phaser.Math.Between(buffer, this.boundsX - buffer);
-      let y = Phaser.Math.Between(buffer, this.boundsY - buffer);
-
-      if (this.isPositionValid(x, y, buffer, group)) {
-        return { x, y, valid: true };
-      }
-    }
-    return { x: 0, y: 0, valid: false };
-  }
-
-  isPositionValid(x, y, buffer, group) {
-    // Check against other objects in the group
-    const isClearOfGroup = !group.getChildren().some((object) => {
-      return Phaser.Math.Distance.Between(x, y, object.x, object.y) < buffer;
-    });
-
-    // Check against world bounds with buffer
-    const withinBoundsX = x > buffer && x < this.boundsX - buffer;
-    const withinBoundsY = y > buffer && y < this.boundsY - buffer;
-
-    return isClearOfGroup && withinBoundsX && withinBoundsY;
   }
 
   setupCamera() {
@@ -322,6 +281,7 @@ export const SideScrollerGame = (domElement) => {
     type: Phaser.AUTO,
     width: 800,
     height: 600,
+    backgroundColor: "#87CEEB", // Sky blue color
     parent: domElement,
     physics: {
       default: "arcade",
