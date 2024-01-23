@@ -8,11 +8,9 @@ import IconsBackground from "../components/common/IconsBackground";
 import "../app/globals.css";
 
 const gamesData = [
-  { title: "Pong Game", gameId: "pong" },
+  { title: "Trololol Pong", gameId: "pong" },
   { title: "Kart Race", gameId: "racing" },
-  { title: "Side Scroll", gameId: "sidescroller" },
-  // Add more games here with unique gameId
-  // Example: { title: 'Puzzle Game', gameId: 'puzzle-game' },
+  { title: "Potato Bird Platforming", gameId: "sidescroller" },
 ];
 
 const Games: NextPage = () => (
@@ -20,12 +18,12 @@ const Games: NextPage = () => (
     <IconsBackground />
     <Navbar />
     <div className="bg-gradient-to-r mx-auto p-8 text-black">
-      <div className="text-center bg-purple-600/50 backdrop-blur-md rounded-xl p-4 mx-8 my-4 shadow-lg hover:scale-105 transition-transform">
-        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 py-10 text-yellow-300">
+      <div className="text-center bg-purple-600/50 backdrop-blur-md rounded-xl p-6 mx-6 my-6 shadow-lg hover:scale-105 transition-transform">
+        <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 py-12 text-yellow-300">
           Interactive Games
         </h1>
       </div>
-      <div className="grid grid-cols-2 gap-4 justify-center">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 justify-center">
         {gamesData.map((game, index) => (
           <GameCard key={index} title={game.title} gameId={game.gameId} />
         ))}

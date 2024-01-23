@@ -67,6 +67,28 @@ class GameUtils {
       }
     }
   }
+
+  resizeGameCanvas() {
+    const canvas = this.scene.game.canvas;
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
+    // Resize the canvas based on the window size
+    const wratio = width / height;
+    const ratio = canvas.width / canvas.height;
+    if (wratio < ratio) {
+      canvas.style.width = width + "px";
+      canvas.style.height = width / ratio + "px";
+    } else {
+      canvas.style.width = height * ratio + "px";
+      canvas.style.height = height + "px";
+    }
+
+    // Center the canvas
+    // canvas.style.position = "absolute";
+    canvas.style.left = (width - canvas.offsetWidth) / 2 + "px";
+    canvas.style.top = (height - canvas.offsetHeight) / 2 + "px";
+  }
 }
 
 export const PongGame = (domElement: HTMLElement) => {
@@ -222,6 +244,7 @@ export const PongGame = (domElement: HTMLElement) => {
           if (this.paddleRight.y < 50) this.paddleRight.y = 50;
           else if (this.paddleRight.y > 550) this.paddleRight.y = 550;
         }
+        this.gameUtils.resizeGameCanvas();
       },
     },
   };

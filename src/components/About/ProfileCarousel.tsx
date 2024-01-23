@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { iconsAndTitles } from "../lib/Static"; // Import the icons and titles array
+import { iconsAndTitles } from "../lib/Static";
 
 const ProfileCarousel = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -23,9 +23,9 @@ const ProfileCarousel = () => {
         return (
           <div
             key={i}
-            className="w-1/3 flex flex-col items-center justify-center"
+            className="w-1/3 flex flex-col items-center justify-center text-white" // Added text-white here
           >
-            {iconAndTitle.icon}
+            <span className="text-4xl">{iconAndTitle.icon}</span>
             <p className="text-sm mt-2">{iconAndTitle.title}</p>
           </div>
         );

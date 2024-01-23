@@ -134,7 +134,7 @@ export class UIManager {
     }
 
     // Center the canvas
-    canvas.style.position = "absolute";
+    // canvas.style.position = "absolute";
     canvas.style.left = (width - canvas.offsetWidth) / 2 + "px";
     canvas.style.top = (height - canvas.offsetHeight) / 2 + "px";
 
@@ -160,7 +160,7 @@ export class UIManager {
     const dpad = {
       up: this.createButton(10, 82, "↑", "moveUp"),
       down: this.createButton(10, 92, "↓", "moveDown"),
-      left: this.createButton(5, 87, "←", "moveLeft"),
+      left: this.createButton(3, 87, "←", "moveLeft"),
       right: this.createButton(15, 87, "→", "moveRight"),
     };
 

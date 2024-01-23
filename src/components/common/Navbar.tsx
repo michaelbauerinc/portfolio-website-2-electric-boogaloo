@@ -19,9 +19,8 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-gray-800 text-white p-4 sticky top-0 z-50">
+    <nav className="bg-gray-800 text-white p-4 sticky top-0 z-50 w-full">
       <div className="container mx-auto flex justify-between items-center">
-        {/* Page Title */}
         <div className="text-lg font-semibold">Mike Bauer</div>
 
         {/* Hamburger Icon for Mobile */}

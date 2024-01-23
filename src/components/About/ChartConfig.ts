@@ -9,7 +9,7 @@ export const bigFiveData = {
   datasets: [
     {
       label: "Score",
-      data: [94, 90, 95, 85, 65],
+      data: [94, 90, 95, 69, 52],
       backgroundColor: "rgba(54, 162, 235, 0.2)",
       borderColor: "rgba(54, 162, 235, 1)",
       borderWidth: 1,

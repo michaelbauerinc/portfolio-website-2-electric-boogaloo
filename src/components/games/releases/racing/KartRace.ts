@@ -173,6 +173,7 @@ export const KartRace = (domElement: HTMLElement) => {
       },
 
       update: function (this: GameScene, time: number, delta: number) {
+        this.kartGameUtils.resizeGameCanvas();
         if (!this.isRaceStarted) {
           return;
         }
