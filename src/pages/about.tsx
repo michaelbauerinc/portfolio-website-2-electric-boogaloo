@@ -16,7 +16,7 @@ const About: NextPage = () => {
       <div className="bg-purple-600/50 backdrop-blur-md rounded-xl p-8 mx-8 my-4 shadow-lg text-black">
         <div className="text-center">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 py-10 text-yellow-300">
-            About Me - Michael Bauer
+            About Me
           </h1>
           <TextSection />
           <ProfileCarousel />

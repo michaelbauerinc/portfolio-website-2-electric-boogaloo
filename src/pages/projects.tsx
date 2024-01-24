@@ -1,5 +1,5 @@
 // src/pages/projects.tsx
-import React, { useState, useEffect } from "react";
+import React from "react";
 import type { NextPage } from "next";
 import Navbar from "../components/common/Navbar";
 import ProjectCard, { ProjectProps } from "../components/projects/ProjectCard";
@@ -8,36 +8,11 @@ import IconsBackground from "../components/common/IconsBackground";
 
 import "../app/globals.css";
 
-const Projects: NextPage = () => {
-  const [projects, setProjects] = useState<ProjectProps[]>([]);
-  const gitHubApiClient = new GitHubApiClient();
+interface ProjectsProps {
+  projects: ProjectProps[];
+}
 
-  useEffect(() => {
-    // Example URLs (replace with actual GitHub project URLs)
-    const projectUrls = [
-      "https://github.com/michaelbauerinc/portfolio-website-2-electric-boogaloo",
-      "https://github.com/michaelbauerinc/llama-streaming-suite",
-      "https://github.com/michaelbauerinc/titanic-machine-learning",
-      "https://github.com/michaelbauerinc/top-down-engine",
-      "https://github.com/michaelbauerinc/towers-of-hanoi",
-      "https://github.com/michaelbauerinc/heap-fisher",
-      "https://github.com/michaelbauerinc/class-hero",
-      "https://github.com/michaelbauerinc/portfolio",
-      "https://github.com/michaelbauerinc/choose-your-own-adventure-engine",
-      "https://github.com/michaelbauerinc/dig-labs",
-      "https://github.com/michaelbauerinc/leagueside",
-      "https://github.com/michaelbauerinc/django-demo",
-      // Add more URLs here
-    ];
-
-    projectUrls.forEach(async (url) => {
-      const projectData = await gitHubApiClient.fetchRepoData(url);
-      if (projectData) {
-        setProjects((prevProjects) => [...prevProjects, projectData]);
-      }
-    });
-  }, []);
-
+const Projects: NextPage<ProjectsProps> = ({ projects }) => {
   return (
     <div>
       <IconsBackground />
@@ -57,5 +32,33 @@ const Projects: NextPage = () => {
     </div>
   );
 };
+
+export async function getServerSideProps() {
+  const gitHubApiClient = new GitHubApiClient();
+  const projectUrls = [
+    "https://github.com/michaelbauerinc/portfolio-website-2-electric-boogaloo",
+    "https://github.com/michaelbauerinc/llama-streaming-suite",
+    "https://github.com/michaelbauerinc/titanic-machine-learning",
+    "https://github.com/michaelbauerinc/top-down-engine",
+    "https://github.com/michaelbauerinc/towers-of-hanoi",
+    "https://github.com/michaelbauerinc/heap-fisher",
+    "https://github.com/michaelbauerinc/class-hero",
+    "https://github.com/michaelbauerinc/portfolio",
+    "https://github.com/michaelbauerinc/choose-your-own-adventure-engine",
+    "https://github.com/michaelbauerinc/dig-labs",
+    "https://github.com/michaelbauerinc/leagueside",
+    "https://github.com/michaelbauerinc/django-demo",
+  ];
+
+  const projects = await Promise.all(
+    projectUrls.map((url) => gitHubApiClient.fetchRepoData(url))
+  );
+
+  return {
+    props: {
+      projects: projects.filter((project) => project !== null),
+    },
+  };
+}
 
 export default Projects;

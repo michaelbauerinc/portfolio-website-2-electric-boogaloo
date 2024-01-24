@@ -6,19 +6,19 @@ const TextSection = () => {
       <p className="text-lg">
         My name is <span className="text-purple-900">Michael Bauer</span>, a
         dedicated Software Engineer with a deep passion for both the creative
-        and technical aspects of technology. My journey in this dynamic field is
-        a blend of relentless dedication to excellence and a lifelong commitment
-        to learning and growth.
+        and technical aspects of technology. My journey in this dynamic field
+        has been fueled by a blend of relentless dedication to excellence, a
+        thirst to learn, and a sickening work ethic.
       </p>
       <p className="mt-6">
         Over the better part of a decade, my skill set has grown to cover a wide
-        range, including expertise in DevOps practices and cloud platforms like
-        AWS and GCP, proficiency in a multitude of programming languages,
-        machine learning models, game engines, and more. As an enterprise
-        software engineer, I&apos;ve participated and led teams to successfully
-        implement large-scale projects, including sophisticated enterprise
-        architectures. These experiences have sharpened my technical abilities
-        and underscored the value of teamwork, creativity, and shared success.
+        range, including expertise in DevOps practices, cloud platforms, a
+        multitude of programming languages, machine learning models, game
+        engines, and more. As an enterprise software engineer, I&apos;ve
+        participated and led teams to successfully implement large-scale
+        projects, including sophisticated enterprise architectures. These
+        experiences have sharpened my technical abilities and underscored the
+        value of teamwork, creativity, and shared success.
       </p>
       <p className="mt-6">
         My journey started in the world of music, as a jazz/classical musician
