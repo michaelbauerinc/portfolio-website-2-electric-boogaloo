@@ -17,13 +17,13 @@ const ProfileCarousel = () => {
   };
 
   return (
-    <div className="flex justify-center items-center mt-8 py-20">
+    <div className="flex flex-col md:flex-row justify-center items-center mt-8 py-20">
       {Array.from({ length: 3 }).map((_, i) => {
         const iconAndTitle = getIconAndTitleForCarousel(i);
         return (
           <div
             key={i}
-            className="w-1/3 flex flex-col items-center justify-center text-white" // Added text-white here
+            className="flex-1 flex flex-col items-center justify-center text-white" // Adjusted for responsive design
           >
             <span className="text-4xl">{iconAndTitle.icon}</span>
             <p className="text-sm mt-2">{iconAndTitle.title}</p>

@@ -1,11 +1,11 @@
 import React, { useState, ChangeEvent, FormEvent, ReactElement } from "react";
 import { FiSend, FiLoader, FiCheckCircle, FiXCircle } from "react-icons/fi";
-import {
-  FaFacebookF,
-  FaTwitter,
-  FaLinkedinIn,
-  FaInstagram,
-} from "react-icons/fa";
+// import {
+//   FaFacebookF,
+//   FaTwitter,
+//   FaLinkedinIn,
+//   FaInstagram,
+// } from "react-icons/fa";
 
 interface FormData {
   name: string;
@@ -142,12 +142,12 @@ const Contact: React.FC = () => {
           )}
         </div>
       )}
-      <div className="flex justify-center gap-4 mt-8">
+      {/* <div className="flex justify-center gap-4 mt-8">
         <FaFacebookF className="text-2xl cursor-pointer" />
         <FaTwitter className="text-2xl cursor-pointer" />
         <FaLinkedinIn className="text-2xl cursor-pointer" />
         <FaInstagram className="text-2xl cursor-pointer" />
-      </div>
+      </div> */}
     </div>
   );
 };

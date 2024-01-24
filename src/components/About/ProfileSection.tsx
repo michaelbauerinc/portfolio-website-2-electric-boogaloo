@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image"; // Import Image component from next/image
 import BigFiveChart from "./BigFiveChart";
 import { bigFiveData, options } from "./ChartConfig"; // Import your chart configuration
 
@@ -8,18 +9,22 @@ const ProfileSection = () => {
       <h1 className="text-center text-3xl font-semibold text-gray-800 py-6">
         Get To Know Me
       </h1>
-      <h2 className="text-center text-1xl font-semibold text-gray-800">
-        "Big 5" Trait Personality Profile
+      <h2 className="text-center text-xl font-semibold text-gray-800">
+        &quot;Big 5&quot; Trait Personality Profile
       </h2>
       <div className="flex flex-col md:flex-row justify-center items-center mt-8">
-        <div className="w-1/2 p-4">
-          <img
-            src="/self.jpg"
-            alt="Self Photo"
-            className="rounded-full w-48 h-48 object-cover mx-auto"
-          />
+        <div className="flex justify-center items-center w-full md:w-1/2 p-4">
+          <div className="w-32 h-32 md:w-48 md:h-48 rounded-full overflow-hidden">
+            <Image
+              src="/self.jpg"
+              alt="Self Photo"
+              width={192}
+              height={192}
+              className="object-cover object-center"
+            />
+          </div>
         </div>
-        <div className="w-1/2 p-4">
+        <div className="w-full md:w-1/2 p-4">
           <BigFiveChart data={bigFiveData} options={options} />
         </div>
       </div>

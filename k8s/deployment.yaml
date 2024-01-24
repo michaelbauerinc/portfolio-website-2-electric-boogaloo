@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: portfolio
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: portfolio
+  template:
+    metadata:
+      labels:
+        app: portfolio
+    spec:
+      containers:
+        - name: portfolio
+          image: lol
+          ports:
+            - containerPort: 3000
+          env:
+            - name: SENDGRID_VERIFIED_SENDER
+              value: "lol"
+            - name: MY_EMAIL
+              value: "lol"
+            - name: SENDGRID_API_KEY
+              value: "lol"

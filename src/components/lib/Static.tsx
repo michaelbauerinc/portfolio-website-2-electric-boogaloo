@@ -22,6 +22,8 @@ import {
   SiTerraform,
   SiPytorch,
   SiGooglecloud,
+  SiTypescript,
+  SiRuby,
 } from "react-icons/si";
 import { BiLogoGoLang, BiLogoJava } from "react-icons/bi";
 
@@ -49,4 +51,6 @@ export const iconsAndTitles = [
   { icon: <FaDatabase className="text-8xl" />, title: "Database Management" },
   { icon: <FaTerminal className="text-8xl" />, title: "Bash" },
   { icon: <FaLock className="text-8xl" />, title: "Security" },
+  { icon: <SiTypescript className="text-8xl" />, title: "Typescript" },
+  { icon: <SiRuby className="text-8xl" />, title: "Ruby" },
 ];

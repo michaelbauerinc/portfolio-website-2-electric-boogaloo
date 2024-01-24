@@ -19,8 +19,8 @@ const Games: NextPage = () => (
     <Navbar />
     <div className="bg-gradient-to-r mx-auto p-8 text-black">
       <div className="text-center bg-purple-600/50 backdrop-blur-md rounded-xl p-6 mx-6 my-6 shadow-lg hover:scale-105 transition-transform">
-        <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 py-12 text-yellow-300">
-          Interactive Games
+        <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 py-12 text-yellow-300 break-words">
+          Games
         </h1>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 justify-center">

@@ -11,7 +11,6 @@ const Home: NextPage = () => {
       <IconsBackground />
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
-          {/* Apply dark mode conditional classes */}
           <h1 className="text-5xl font-bold text-black dark:text-white">
             Welcome to my world
           </h1>
