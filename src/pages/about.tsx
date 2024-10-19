@@ -3,9 +3,9 @@
 import Navbar from "../components/common/Navbar";
 import "../app/globals.css";
 import type { NextPage } from "next";
-import ProfileCarousel from "../components/about/ProfileCarousel";
-import ProfileSection from "../components/about/ProfileSection";
-import TextSection from "../components/about/TextSection";
+import ProfileCarousel from "../components/About/ProfileCarousel";
+import ProfileSection from "../components/About/ProfileSection";
+import TextSection from "../components/About/TextSection";
 import IconsBackground from "../components/common/IconsBackground";
 
 const About: NextPage = () => {
